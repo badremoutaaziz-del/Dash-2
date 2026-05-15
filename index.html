@@ -351,6 +351,39 @@ body.cp-agent-readonly .vtog{
   pointer-events:auto!important;
 }
 
+
+/* AGENT CHATBOT ALLOWED */
+body.cp-agent-readonly #cpbot,
+body.cp-agent-readonly #cpbot *,
+body.cp-agent-readonly .cpbot-fab,
+body.cp-agent-readonly .cpbot-fab *{
+  pointer-events:auto!important;
+}
+body.cp-agent-readonly #cpbot-input{
+  pointer-events:auto!important;
+  background:var(--s2)!important;
+  color:var(--ink)!important;
+  cursor:text!important;
+}
+body.cp-agent-readonly .cpquick,
+body.cp-agent-readonly .cpbot-send,
+body.cp-agent-readonly .cpbot-x{
+  display:inline-flex!important;
+  pointer-events:auto!important;
+  cursor:pointer!important;
+}
+body.cp-agent-readonly .cpbot-send{display:block!important;}
+
+/* AGENT PLANNING WEEK SELECT ALLOWED */
+body.cp-agent-readonly #planning-week-select,
+body.cp-agent-readonly .planning-week-select{
+  pointer-events:auto!important;
+  opacity:1!important;
+  cursor:pointer!important;
+  background:transparent!important;
+  color:var(--ink)!important;
+}
+
 </style>
 </head>
 <body>
@@ -398,6 +431,9 @@ body.cp-agent-readonly .vtog{
     <button class="cpquick" onclick="cpBotAsk('Résumé performance de l’agent sélectionné')">Résumé</button>
     <button class="cpquick" onclick="cpBotAsk('Heures travaillées')">Heures</button>
     <button class="cpquick" onclick="cpBotAsk('KPI faibles et points à améliorer')">KPIs faibles</button>
+    <button class="cpquick" onclick="cpBotAsk('Résumé mensuel de l’agent sélectionné')">Résumé mensuel</button>
+    <button class="cpquick" onclick="cpBotAsk('Heures mensuelles de l’agent sélectionné')">Heures mensuelles</button>
+    <button class="cpquick" onclick="cpBotAsk('KPIs faibles mensuels de l’agent sélectionné')">KPIs mensuels</button>
     <button class="cpquick" onclick="cpBotAsk('Planning de cette semaine')">Planning</button>
   </div>
   <div class="cpbot-in">
@@ -701,7 +737,7 @@ let CONFIG = {
     {id:"aht",label:"AHT (min)",unit:" min",target:7,dir:"lte",vol:false},
     {id:"chats",label:"Chats",unit:"",target:null,dir:"gte",vol:true},
     {id:"jira",label:"Jira Tickets",unit:"",target:null,dir:"gte",vol:true},
-    {id:"productivity",label:"Productivity",unit:"",target:7,dir:"gte",vol:false},
+    {id:"productivity",label:"Productivity",unit:"",target:null,dir:"gte",vol:false},
     {id:"totalHrs",label:"Total Hours Worked",unit:" h",target:null,dir:"gte",vol:false},
     {id:"qualEmail",label:"Qualité Email (%)",unit:"%",target:90,dir:"gte",vol:false},
     {id:"qualPhone",label:"Qualité Téléphone (%)",unit:"%",target:90,dir:"gte",vol:false},
@@ -712,12 +748,28 @@ function saveConfig(){try{localStorage.setItem('cp_config',JSON.stringify(CONFIG
 function loadConfig(){try{const s=localStorage.getItem('cp_config');if(s)CONFIG=JSON.parse(s);}catch(e){}}
 loadConfig();
 
+// GitHub shared config fix: productivity target is disabled globally until a real target exists.
+function normalizeSharedConfig(){
+  try{
+    if(CONFIG && Array.isArray(CONFIG.kpis)){
+      const prod=CONFIG.kpis.find(k=>k.id==='productivity');
+      if(prod) prod.target=null;
+    }
+  }catch(e){}
+}
+normalizeSharedConfig();
+
 // ══════════════════════════════════════════════════════════
 // ── STATE ─────────────────────────────────────────────────
 // ══════════════════════════════════════════════════════════
 let store={},apStore={},coachStore={},pipStore={};
 let selA=null,curPage='agent',view='weekly',activeMth='Mars',activeTab='kpis';
-let charts=[],lastEmail='',scriptUrl='',connected=false,pendingAPText='',autoRefreshTimer=null,lastSheetUpdate='',currentWeek=null;
+const DEFAULT_SCRIPT_URL='https://script.google.com/macros/s/AKfycbz8bbvvJORR5ek3OWJNlgTlveKgQCA1oinG0iUqdaf95wjOl_cnYbGXYME2op2fikjn/exec';
+function hasDefaultScriptUrl(){
+  return /^https:\/\/script\.google\.com\/macros\/s\/[^\s'"]+\/exec(?:\?.*)?$/.test((DEFAULT_SCRIPT_URL||'').trim());
+}
+
+let charts=[],lastEmail='',scriptUrl=hasDefaultScriptUrl()?DEFAULT_SCRIPT_URL:'',connected=!!scriptUrl,pendingAPText='',autoRefreshTimer=null,lastSheetUpdate='',currentWeek=null;
 
 const CACHE_KEY='cp_dashboard_state_v2';
 function saveDashboardState(){
@@ -731,14 +783,31 @@ function saveDashboardState(){
 }
 function loadDashboardState(){
   try{
-    const raw=localStorage.getItem(CACHE_KEY);if(!raw)return;
+    const hasDefault=hasDefaultScriptUrl();
+    const raw=localStorage.getItem(CACHE_KEY);
+    if(!raw){
+      scriptUrl=hasDefault?DEFAULT_SCRIPT_URL:'';
+      connected=!!scriptUrl;
+      return;
+    }
+
     const st=JSON.parse(raw);
     if(st.CONFIG)CONFIG=st.CONFIG;
     store=st.store||{};apStore=st.apStore||{};coachStore=st.coachStore||{};pipStore=st.pipStore||{};
     selA=Number.isInteger(st.selA)?st.selA:null;curPage=st.curPage||'agent';view=st.view||'weekly';
     activeMth=st.activeMth||'Mars';activeTab=st.activeTab||'kpis';lastSheetUpdate=st.lastSheetUpdate||'';
-    scriptUrl=st.scriptUrl||scriptUrl||'';connected=!!st.connected;currentWeek=st.currentWeek||currentWeek;
-  }catch(e){console.warn('Cache not loaded',e);}
+
+    // Always prioritize the hardcoded /exec URL for GitHub users.
+    // This prevents agents from seeing an empty dashboard because localStorage is browser-specific.
+    scriptUrl=hasDefault?DEFAULT_SCRIPT_URL:(st.scriptUrl||scriptUrl||'');
+    connected=!!scriptUrl;
+    currentWeek=st.currentWeek||currentWeek;
+  }catch(e){
+    console.warn('Cache not loaded',e);
+    const hasDefault=hasDefaultScriptUrl();
+    scriptUrl=hasDefault?DEFAULT_SCRIPT_URL:'';
+    connected=!!scriptUrl;
+  }
 }
 function saveManualData(){
   if(selA!==null)saveInputs(selA,getWeek());
@@ -759,6 +828,7 @@ function getWeek(){const el=document.getElementById('wsel');return parseInt(el&&
 function monthOf(wNum){const w=CONFIG.weeks.find(x=>x.num===wNum);return w?w.month:'—';}
 function allMonths(){return[...new Set(CONFIG.weeks.map(w=>w.month))];}
 loadDashboardState();
+normalizeSharedConfig();
 
 function saveInputs(ai,w){
   const k=key(ai,w),d=store[k]||{};
@@ -1037,7 +1107,7 @@ function renderSidebar(){
 // ── PAGE ROUTER ───────────────────────────────────────────
 // ══════════════════════════════════════════════════════════
 function goTeam(){if(currentUser&&!authIsManager()){authGuardPage();renderSidebar();renderContent();return;}curPage='team';selA=null;renderSidebar();renderTeam();}
-function goPlanning(){curPage='planning';selA=(currentUser&&!authIsManager())?authAllowedAgentIndex():null;renderSidebar();renderPlanning();}
+function goPlanning(){curPage='planning';selA=(currentUser&&!authIsManager())?authAllowedAgentIndex():null;renderSidebar();renderPlanning();if(typeof cpCleanAgentUI==='function')setTimeout(cpCleanAgentUI,0);}
 function goPip(){if(currentUser&&!authIsManager()){authGuardPage();renderSidebar();renderContent();return;}curPage='pip';selA=null;renderSidebar();renderPIPs();}
 function goAdmin(){if(currentUser&&!authIsManager()){authGuardPage();renderSidebar();renderContent();return;}curPage='admin';selA=null;renderSidebar();renderAdmin();}
 function goGuide(){if(currentUser&&!authIsManager()){authGuardPage();renderSidebar();renderContent();return;}curPage='guide';selA=null;renderSidebar();renderGuide();}
@@ -1515,12 +1585,19 @@ function copyEmail(){const b=document.getElementById('ebody');if(!b||b.textConte
 function renderMonthly(){
   const a=CONFIG.agents[selA];
   const mw=CONFIG.weeks.filter(w=>w.month===activeMth).map(w=>w.num);
-  let tQe=0,cQe=0,tQp=0,cQp=0,tA=0,cA=0,tH=0,cH=0;
+  let tQe=0,cQe=0,tQp=0,cQp=0,tA=0,cA=0,tH=0,cH=0,tChats=0,tJira=0,tProd=0,cProd=0,tEmails=0,tCalls=0;
   mw.forEach(w=>{const d=getData(selA,w);
-    if(d.qualEmail!==''){tQe+=parseFloat(d.qualEmail);cQe++;}if(d.qualPhone!==''){tQp+=parseFloat(d.qualPhone);cQp++;}
-    if(d.aht!==''){tA+=parseFloat(d.aht);cA++;}if(d.totalHrs!==''){tH+=parseFloat(d.totalHrs);cH++;}
+    if(d.qualEmail!==''){tQe+=parseFloat(d.qualEmail);cQe++;}
+    if(d.qualPhone!==''){tQp+=parseFloat(d.qualPhone);cQp++;}
+    if(d.aht!==''){tA+=parseFloat(d.aht);cA++;}
+    if(d.totalHrs!==''){tH+=parseFloat(d.totalHrs);cH++;}
+    tEmails+=parseFloat(d.emailsHandled)||0;
+    tCalls+=parseFloat(d.calls)||0;
+    tChats+=parseFloat(d.chats)||0;
+    tJira+=parseFloat(d.jira)||0;
+    if(d.productivity!==''){tProd+=parseFloat(d.productivity)||0;cProd++;}
   });
-  const avgQe=cQe?(tQe/cQe).toFixed(1):'—',avgQp=cQp?(tQp/cQp).toFixed(1):'—',avgA=cA?(tA/cA).toFixed(1):'—',sumH=cH?tH.toFixed(1):'—';
+  const avgQe=cQe?(tQe/cQe).toFixed(1):'—',avgQp=cQp?(tQp/cQp).toFixed(1):'—',avgA=cA?(tA/cA).toFixed(1):'—',sumH=cH?tH.toFixed(1):'—',avgProd=cProd?(tProd/cProd).toFixed(2):'—';
   const coachCnt=mw.filter(w=>getCoach(selA,w).checked).length;
   const agAPs=Object.values(apStore).filter(p=>p.ai===selA&&mw.includes(p.week));
   const coachEmails=mw.filter(w=>{const c=getCoach(selA,w);return c.checked&&c.fileName&&c.fileData;}).map(w=>({w,...getCoach(selA,w)}));
@@ -1529,7 +1606,7 @@ function renderMonthly(){
     const d=getData(selA,w),lv=perf(d),coach=getCoach(selA,w);
     const cls=lv==='top'?'b-top':lv==='avg'?'b-avg':lv==='low'?'b-low':'b-n';
     const lbl=lv==='top'?'Top':lv==='avg'?'Moyen':lv==='low'?'À améliorer':'—';
-    return`<tr><td style="font-weight:500">S${w}</td><td>${d.qualEmail||'—'}${d.qualEmail?'%':''}</td><td>${d.qualPhone||'—'}${d.qualPhone?'%':''}</td><td>${d.aht||'—'}${d.aht?' min':''}</td><td>${d.emailsHandled||'—'}</td><td>${d.calls||'—'}</td><td>${d.totalHrs||'—'}${d.totalHrs?' h':''}</td><td style="font-size:10px;color:var(--rust)">${d.issues||'—'}</td><td><span class="cpill ${cls}">${lbl}</span></td>
+    return`<tr><td style="font-weight:500">S${w}</td><td>${d.qualEmail||'—'}${d.qualEmail?'%':''}</td><td>${d.qualPhone||'—'}${d.qualPhone?'%':''}</td><td>${d.aht||'—'}${d.aht?' min':''}</td><td>${d.emailsHandled||'—'}</td><td>${d.calls||'—'}</td><td>${d.chats||'—'}</td><td>${d.jira||'—'}</td><td>${d.productivity||'—'}</td><td>${d.totalHrs||'—'}${d.totalHrs?' h':''}</td><td style="font-size:10px;color:var(--rust)">${d.issues||'—'}</td><td><span class="cpill ${cls}">${lbl}</span></td>
     <td>${coach.checked?`<span style="color:var(--pine);font-size:10.5px;font-weight:500">✓ ${coach.date||''}</span>`:'<span style="color:var(--ink3)">—</span>'}
       ${coach.fileName&&coach.fileData?` <button class="btn sm" onclick="openFV('${coach.fileName}',coachStore['${key(selA,w)}'].fileData,coachStore['${key(selA,w)}'].fileType)">📄 Voir</button> <button class="btn sm" onclick="deleteCoachFile(${selA},${w})">🗑️ Email</button>`:''}
       ${coach.checked?` <button class="btn sm" onclick="clearCoachSubmission(${selA},${w})">✕ 1:1</button>`:''}
@@ -1545,6 +1622,11 @@ function renderMonthly(){
       <div class="msc"><div class="msl">Q. Tél. Moy.</div><div class="msv">${avgQp}${cQp?'%':''}</div><div class="mss">Cible ≥ 90%</div></div>
       <div class="msc"><div class="msl">AHT Moyen</div><div class="msv">${avgA}${cA?' min':''}</div><div class="mss">Cible ≤ 7 min</div></div>
       <div class="msc"><div class="msl">Total Hours Worked</div><div class="msv">${sumH}${cH?'<span style="font-size:12px;color:var(--ink3)"> h</span>':''}</div><div class="mss">Somme mensuelle</div></div>
+      <div class="msc"><div class="msl">Emails</div><div class="msv">${tEmails||'—'}</div><div class="mss">Somme mensuelle</div></div>
+      <div class="msc"><div class="msl">Appels</div><div class="msv">${tCalls||'—'}</div><div class="mss">Somme mensuelle</div></div>
+      <div class="msc"><div class="msl">Chats</div><div class="msv">${tChats||'—'}</div><div class="mss">Somme mensuelle</div></div>
+      <div class="msc"><div class="msl">Jira handled</div><div class="msv">${tJira||'—'}</div><div class="mss">Somme mensuelle</div></div>
+      <div class="msc"><div class="msl">Productivity Moy.</div><div class="msv">${avgProd}</div><div class="mss">Moyenne mensuelle</div></div>
     </div>
     <div class="two" style="margin-bottom:10px">
       <div class="card" style="overflow-x:auto">
@@ -1552,12 +1634,13 @@ function renderMonthly(){
           ${coachCnt?`<span style="background:var(--pine-l);color:var(--pine);border-radius:8px;padding:1px 5px;font-size:9px">✓ ${coachCnt} 1:1</span>`:''}
         </span></div>
         <table class="mt">
-          <thead><tr><th>Sem.</th><th>Q.Email</th><th>Q.Tél</th><th>AHT</th><th>Emails</th><th>Appels</th><th>Total Hrs</th><th>Problèmes</th><th>Niveau</th><th>1:1</th></tr></thead>
-          <tbody>${rows||'<tr><td colspan="10" style="color:var(--ink3);text-align:center;padding:12px">Aucune donnée</td></tr>'}</tbody>
+          <thead><tr><th>Sem.</th><th>Q.Email</th><th>Q.Tél</th><th>AHT</th><th>Emails</th><th>Appels</th><th>Chats</th><th>Jira</th><th>Prod</th><th>Total Hrs</th><th>Problèmes</th><th>Niveau</th><th>1:1</th></tr></thead>
+          <tbody>${rows||'<tr><td colspan="13" style="color:var(--ink3);text-align:center;padding:12px">Aucune donnée</td></tr>'}</tbody>
         </table>
       </div>
       <div>
         <div class="card" style="margin-bottom:9px"><div class="ct">Qualité — ${activeMth}</div><div style="height:155px"><canvas id="ch-m"></canvas></div></div>
+        <div class="card" style="margin-bottom:9px"><div class="ct">Volumes — ${activeMth}</div><div style="height:155px"><canvas id="ch-m-vol"></canvas></div></div>
         ${coachEmails.length?`<div class="card"><div class="ct">Emails 1:1 — ${activeMth}</div>
           <div class="email-list">${coachEmails.map(c=>`<div class="email-item" onclick="openFV('${c.fileName}',coachStore['${key(selA,c.w)}'].fileData,coachStore['${key(selA,c.w)}'].fileType)">
             <span class="ew">S${c.w}</span><span class="ed">${c.date||''}</span><span class="en">📄 ${c.fileName}</span><span class="et ${ftCls(c.fileName)}">${ftLbl(c.fileName)}</span>
@@ -1571,13 +1654,23 @@ function renderMonthly(){
   const mLabels=mw.map(w=>'S'+w);
   const mqe=mw.map(w=>{const d=getData(selA,w);return d.qualEmail!==''?parseFloat(d.qualEmail):null;});
   const mqp=mw.map(w=>{const d=getData(selA,w);return d.qualPhone!==''?parseFloat(d.qualPhone):null;});
+  const memails=mw.map(w=>parseFloat(getData(selA,w).emailsHandled)||0);
+  const mcalls=mw.map(w=>parseFloat(getData(selA,w).calls)||0);
+  const mchats=mw.map(w=>parseFloat(getData(selA,w).chats)||0);
+  const mjira=mw.map(w=>parseFloat(getData(selA,w).jira)||0);
   charts.push(new Chart(document.getElementById('ch-m'),{type:'line',data:{labels:mLabels,datasets:[
     {label:'Email %',data:mqe,borderColor:'#1A5435',backgroundColor:'rgba(26,84,53,.09)',tension:.35,borderWidth:2,fill:true,spanGaps:true,pointRadius:4},
     {label:'Tél. %',data:mqp,borderColor:'#1A3878',backgroundColor:'rgba(26,56,120,.06)',tension:.35,borderWidth:2,fill:false,spanGaps:true,pointRadius:4,borderDash:[4,3]}
   ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:9.5},boxWidth:11}}},
     scales:{x:{grid:{color:'#EEEBE4'},ticks:{font:{size:9.5},color:'#928E82'}},y:{grid:{color:'#EEEBE4'},suggestedMin:60,suggestedMax:100,ticks:{callback:v=>v+'%',font:{size:9.5},color:'#928E82'}}}}}));
+  charts.push(new Chart(document.getElementById('ch-m-vol'),{type:'bar',data:{labels:mLabels,datasets:[
+    {label:'Emails',data:memails,backgroundColor:'rgba(26,84,53,.45)',borderRadius:3},
+    {label:'Appels',data:mcalls,backgroundColor:'rgba(26,56,120,.45)',borderRadius:3},
+    {label:'Chats',data:mchats,backgroundColor:'rgba(123,69,0,.45)',borderRadius:3},
+    {label:'Jira',data:mjira,backgroundColor:'rgba(122,24,24,.40)',borderRadius:3}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:9.5},boxWidth:11}}},scales:{x:{grid:{color:'#EEEBE4'},ticks:{font:{size:9.5},color:'#928E82'}},y:{grid:{color:'#EEEBE4'},ticks:{font:{size:9.5},color:'#928E82'}}}}}));
 }
-function setMth(m){activeMth=m;destroyCharts();renderMonthly();}
+function setMth(m){activeMth=m;destroyCharts();renderMonthly();if(typeof cpCleanAgentUI==='function')setTimeout(cpCleanAgentUI,0);}
 
 // ══════════════════════════════════════════════════════════
 // ── TEAM VIEW ─────────────────────────────────────────────
@@ -2061,7 +2154,7 @@ function renderPlanning(){
       <div style="display:flex;align-items:center;gap:8px">
         <div style="display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:4px 9px;font-size:11.5px">
           <span style="font-size:13px">📆</span>
-          <select onchange="planningWeek=this.value;renderPlanning()" style="border:none;background:none;font-family:'Sora',sans-serif;font-size:11.5px;color:var(--ink);cursor:pointer;outline:none">${weekOptions}</select>
+          <select id="planning-week-select" class="planning-week-select" onchange="planningWeek=this.value;renderPlanning()" style="border:none;background:none;font-family:'Sora',sans-serif;font-size:11.5px;color:var(--ink);cursor:pointer;outline:none">${weekOptions}</select>
         </div>
       </div>
     </div>
@@ -2257,6 +2350,25 @@ function cpBotFindAgent(query){
   return -1;
 }
 
+function cpBotMonthlySummary(ai, mode){
+  const a=CONFIG.agents[ai],month=activeMth||monthOf(getWeek());
+  const weeks=CONFIG.weeks.filter(x=>x.month===month).map(x=>x.num);
+  let hrs=0,emails=0,calls=0,chats=0,jira=0,prod=0,cProd=0,qe=0,cQe=0,qp=0,cQp=0,aht=0,cAht=0;
+  const weak=[];
+  weeks.forEach(ww=>{
+    const x=getData(ai,ww);
+    hrs+=parseFloat(x.totalHrs)||0; emails+=parseFloat(x.emailsHandled)||0; calls+=parseFloat(x.calls)||0; chats+=parseFloat(x.chats)||0; jira+=parseFloat(x.jira)||0;
+    if(x.productivity!==''){prod+=parseFloat(x.productivity)||0;cProd++;}
+    if(x.qualEmail!==''){qe+=parseFloat(x.qualEmail)||0;cQe++; if(parseFloat(x.qualEmail)<90)weak.push('S'+ww+' · Qualité Email '+x.qualEmail+'%');}
+    if(x.qualPhone!==''){qp+=parseFloat(x.qualPhone)||0;cQp++; if(parseFloat(x.qualPhone)<90)weak.push('S'+ww+' · Qualité Tél '+x.qualPhone+'%');}
+    if(x.aht!==''){aht+=parseFloat(x.aht)||0;cAht++; if(parseFloat(x.aht)>7)weak.push('S'+ww+' · AHT '+x.aht+' min');}
+  });
+  const avgProd=cProd?(prod/cProd).toFixed(2):'—',avgQe=cQe?(qe/cQe).toFixed(1)+'%':'—',avgQp=cQp?(qp/cQp).toFixed(1)+'%':'—',avgAht=cAht?(aht/cAht).toFixed(1)+' min':'—';
+  if(mode==='hours') return a.name+' · Heures mensuelles '+month+'\nHeures cumulées: '+(hrs?hrs.toFixed(1)+' h':'—')+'\nProductivity moyenne: '+avgProd+'\nSemaines incluses: '+(weeks.map(x=>'S'+x).join(', ')||'—');
+  if(mode==='weak') return a.name+' · KPIs faibles mensuels '+month+'\n'+(weak.length?weak.join('\n'):'Aucun KPI faible détecté sur les données mensuelles disponibles.')+'\n\nMoyennes: Q.Email '+avgQe+' · Q.Tél '+avgQp+' · AHT '+avgAht+' · Prod '+avgProd;
+  return a.name+' · Résumé mensuel '+month+'\nHeures cumulées: '+(hrs?hrs.toFixed(1)+' h':'—')+'\nEmails: '+(emails||'—')+' · Appels: '+(calls||'—')+' · Chats: '+(chats||'—')+' · Jira: '+(jira||'—')+'\nProductivity moyenne: '+avgProd+'\nQualité Email moy.: '+avgQe+' · Qualité Tél moy.: '+avgQp+' · AHT moy.: '+avgAht+'\nSemaines incluses: '+(weeks.map(x=>'S'+x).join(', ')||'—')+'\n\nKPIs à surveiller:\n'+(weak.length?weak.join('\n'):'Aucun point faible majeur détecté.');
+}
+
 function cpBotAnswer(q){
   const query=(q||'').toLowerCase();
   const ai=cpBotAgentIndex(q);
@@ -2264,17 +2376,15 @@ function cpBotAnswer(q){
   const a=CONFIG.agents[ai],w=getWeek(),d=getData(ai,w),c=getCoach(ai,w);
   const apAgent=Object.values(apStore||{}).filter(p=>p.ai===ai);
   const pips=Object.values(pipStore||{}).filter(p=>p.ai===ai);
+  const isMonthly=query.includes('mois')||query.includes('mensuel')||query.includes('monthly');
+  if(isMonthly && (query.includes('heure')||query.includes('hours')||query.includes('worked')||query.includes('hrs'))) return cpBotMonthlySummary(ai,'hours');
+  if(isMonthly && (query.includes('faible')||query.includes('improve')||query.includes('améliorer')||query.includes('weak')||query.includes('kpi'))) return cpBotMonthlySummary(ai,'weak');
+  if(isMonthly) return cpBotMonthlySummary(ai,'summary');
   if(query.includes('planning')||query.includes('shift')||query.includes('horaire'))return cpBotPlanningFor(a.name);
   if(query.includes('heure')||query.includes('hours')||query.includes('worked')||query.includes('hrs'))return a.name+' · S'+w+'\nHeures travaillées: '+cpBotVal(d.totalHrs,' h')+'\nProductivity: '+cpBotVal(d.productivity)+'\nAHT: '+cpBotVal(d.aht,' min')+'\n\nTendance 4 dernières semaines:\n'+cpBotTrend(ai);
   if(query.includes('faible')||query.includes('improve')||query.includes('améliorer')||query.includes('weak')||query.includes('kpi'))return a.name+' · KPIs à surveiller S'+w+'\n'+cpBotWeakKPIs(d);
   if(query.includes('coach')||query.includes('brief')||query.includes('pip'))return a.name+' · Suivi\nCoaching 1:1: '+(c.checked?'Oui':'Non')+(c.date?' · '+c.date:'')+'\nPlans d’action: '+apAgent.length+'\nPIPs: '+pips.length+(pips.length?'\nDernier PIP: '+(pips[pips.length-1].objective||'—')+' · '+(pips[pips.length-1].status||'—'):'');
-  if(query.includes('mois')||query.includes('mensuel')||query.includes('monthly')){
-    const month=monthOf(w); const weeks=CONFIG.weeks.filter(x=>x.month===month).map(x=>x.num);
-    let hrs=0,contacts=0,qs=[];weeks.forEach(ww=>{const x=getData(ai,ww);hrs+=parseFloat(x.totalHrs)||0;contacts+=(parseFloat(x.emailsHandled)||0)+(parseFloat(x.calls)||0)+(parseFloat(x.chats)||0);['qualGlobal','qualEmail','qualPhone'].forEach(k=>{const v=parseFloat(x[k]);if(!isNaN(v))qs.push(v);});});
-    const avgQ=qs.length?(qs.reduce((s,v)=>s+v,0)/qs.length).toFixed(1)+'%':'—';
-    return a.name+' · Vue mensuelle '+month+'\nHeures cumulées: '+(hrs?hrs.toFixed(1)+' h':'—')+'\nContacts traités: '+(contacts||'—')+'\nQualité moyenne: '+avgQ+'\nSemaines incluses: '+weeks.map(x=>'S'+x).join(', ');
-  }
-  return a.name+' · Résumé S'+w+'\nPerformance: '+perf(d).toUpperCase()+'\nHeures: '+cpBotVal(d.totalHrs,' h')+'\nEmails: '+cpBotVal(d.emailsHandled)+' · Calls: '+cpBotVal(d.calls)+' · Chats: '+cpBotVal(d.chats)+'\nProductivity: '+cpBotVal(d.productivity)+' · AHT: '+cpBotVal(d.aht,' min')+'\nQualité globale: '+cpBotVal(d.qualGlobal,'%')+' · Email: '+cpBotVal(d.qualEmail,'%')+' · Phone: '+cpBotVal(d.qualPhone,'%')+'\n\nKPIs à surveiller:\n'+cpBotWeakKPIs(d);
+  return a.name+' · Résumé S'+w+'\nPerformance: '+perf(d).toUpperCase()+'\nHeures: '+cpBotVal(d.totalHrs,' h')+'\nEmails: '+cpBotVal(d.emailsHandled)+' · Calls: '+cpBotVal(d.calls)+' · Chats: '+cpBotVal(d.chats)+' · Jira: '+cpBotVal(d.jira)+'\nProductivity: '+cpBotVal(d.productivity)+' · AHT: '+cpBotVal(d.aht,' min')+'\nQualité globale: '+cpBotVal(d.qualGlobal,'%')+' · Email: '+cpBotVal(d.qualEmail,'%')+' · Phone: '+cpBotVal(d.qualPhone,'%')+'\n\nKPIs à surveiller:\n'+cpBotWeakKPIs(d);
 }
 
 // ══════════════════════════════════════════════════════════
@@ -2284,11 +2394,38 @@ buildWeekSelect(currentWeek);
 /* auth handled by verified login */
 /* auth handled by verified login */
 /* auth handled by verified login */
-if(scriptUrl){document.getElementById('sc-url').value=scriptUrl;document.getElementById('disp-url').value=scriptUrl.length>50?scriptUrl.slice(0,50)+'…':scriptUrl;setSS('ok','✓ Cache chargé');}
-renderSidebar();
-if(currentUser){renderContent();}
-else if(selA!==null&&curPage==='agent')renderContent();else if(curPage==='team')renderTeam();else if(curPage==='pip')renderPIPs();
-try{const saved=localStorage.getItem('cp_script_url');if(saved&&!scriptUrl){document.getElementById('sc-url').value=saved;}}catch(e){}
+(function(){
+  const hasDefault=hasDefaultScriptUrl();
+  if(hasDefault){
+    scriptUrl=DEFAULT_SCRIPT_URL;
+    connected=true;
+  }
+
+  if(scriptUrl){
+    const sc=document.getElementById('sc-url');
+    const disp=document.getElementById('disp-url');
+    if(sc)sc.value=scriptUrl;
+    if(disp)disp.value=scriptUrl.length>50?scriptUrl.slice(0,50)+'…':scriptUrl;
+    setSS('ok',hasDefault?'✓ Connecté automatiquement':'✓ Cache chargé');
+  }
+
+  renderSidebar();
+  if(currentUser){renderContent();}
+  else if(selA!==null&&curPage==='agent')renderContent();else if(curPage==='team')renderTeam();else if(curPage==='pip')renderPIPs();
+
+  if(hasDefault){
+    try{localStorage.setItem('cp_script_url',DEFAULT_SCRIPT_URL);}catch(e){}
+    setTimeout(function(){
+      try{
+        connected=true;
+        reloadData(true);
+        startAutoRefresh();
+      }catch(e){console.warn('Auto-connect failed',e);}
+    },600);
+  }else{
+    try{const saved=localStorage.getItem('cp_script_url');if(saved&&!scriptUrl){const sc=document.getElementById('sc-url');if(sc)sc.value=saved;}}catch(e){}
+  }
+})();
 </script>
 
 
@@ -2429,6 +2566,9 @@ try{const saved=localStorage.getItem('cp_script_url');if(saved&&!scriptUrl){docu
       const keep = ['cp-login-email','cp-login-password','cp-login-button','cp-signout-btn','cpbot-input','wsel','bw','bm'].includes(id) || el.closest('#cpbot') || el.closest('.vtog') || el.closest('.wpill');
       if(!keep){
         if(['INPUT','TEXTAREA','SELECT'].includes(el.tagName)) el.setAttribute('readonly','readonly');
+      }else{
+        el.removeAttribute('readonly');
+        el.disabled=false;
       }
     });
   }
@@ -2724,7 +2864,7 @@ try{const saved=localStorage.getItem('cp_script_url');if(saved&&!scriptUrl){docu
 
     // Hide manual edit tabs/cards/buttons including 1:1 delete controls.
     const blocked=["Saisie & Graphiques","Saisie KPIs","Email 1:1","Plans d\'Action","Save Data","Tout supprimer","✕ 1:1","Modifier","Supprimer","Générer"];
-    document.querySelectorAll('button,.tab,.card,.ec,.coach-box,.ap-new').forEach(el=>{
+    document.querySelectorAll('button,.tab,.coach-box,.ap-new').forEach(el=>{
       if(el.id==='bw'||el.id==='bm'||el.id==='cp-signout-btn'||el.closest('.vtog')||el.closest('.wpill')) return;
       const txt=(el.textContent||'').trim();
       if(blocked.some(b=>txt.includes(b))){
