@@ -1,0 +1,2829 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Credit+ | Team Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F0EEE8;--surf:#FFFFFF;--s2:#F6F4EF;--s3:#EEEBE4;
+  --bd:#DDD9CF;--bd2:#C5C0B3;
+  --ink:#18160F;--ink2:#524E43;--ink3:#928E82;
+  --pine:#1A5435;--pine-l:#CBE8D5;
+  --gold:#7B4500;--gold-l:#F5E6C8;
+  --rust:#7A1818;--rust-l:#F5D0D0;
+  --ocean:#1A3878;--ocean-l:#CFD9F5;
+  --acc:#18160F;
+}
+body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:13.5px;-webkit-font-smoothing:antialiased}
+
+/* ══ HEADER ══ */
+.hdr{background:var(--surf);border-bottom:1px solid var(--bd);padding:0 20px;display:flex;align-items:center;height:52px;position:sticky;top:0;z-index:300;gap:10px}
+.logo{display:flex;align-items:center;gap:9px;flex-shrink:0;text-decoration:none}
+.logo-img{width:34px;height:34px;border-radius:7px;object-fit:cover;border:1px solid var(--bd);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.logo-name{font-family:'Playfair Display',serif;font-size:16px;color:var(--ink)}
+.logo-tag{font-size:8.5px;color:var(--ink3);letter-spacing:.1em;text-transform:uppercase;display:block}
+.hdr-mid{flex:1;display:flex;align-items:center;gap:7px;max-width:440px}
+.conn-wrap{flex:1;display:flex;align-items:center;gap:6px;background:var(--s2);border:1.5px solid var(--bd);border-radius:7px;padding:5px 9px;cursor:pointer;transition:border-color .15s;position:relative;z-index:1000;pointer-events:auto!important}
+.conn-wrap:hover{border-color:var(--bd2)}
+.conn-wrap input{flex:1;border:none;background:none;font-family:'Sora',sans-serif;font-size:11px;color:var(--ink);outline:none;cursor:pointer;min-width:0}
+.conn-wrap input::placeholder{color:var(--ink3)}
+.sdot{width:7px;height:7px;border-radius:50%;background:#D1CEC8;flex-shrink:0;transition:background .3s}
+.sdot.ok{background:#22c55e}.sdot.err{background:#ef4444}.sdot.spin{background:#f59e0b;animation:pulse .9s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
+.slbl{font-size:10px;color:var(--ink3);white-space:nowrap}
+.hdr-r{display:flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0}
+.wpill{display:flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:4px 8px;font-size:11.5px}
+.wpill select{border:none;background:none;font-family:'Sora',sans-serif;font-size:11.5px;color:var(--ink);cursor:pointer;outline:none}
+.vtog{display:flex;background:var(--s2);border:1px solid var(--bd);border-radius:7px;overflow:hidden}
+.vb{padding:4px 10px;font-size:11px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--ink2);transition:all .14s;font-family:'Sora',sans-serif}
+.vb.on{background:var(--acc);color:#fff}
+
+/* ══ LAYOUT ══ */
+.wrap{display:grid;grid-template-columns:192px 1fr;min-height:calc(100vh - 52px)}
+.sb{background:var(--surf);border-right:1px solid var(--bd);padding:11px 0;overflow-y:auto;display:flex;flex-direction:column}
+.sb-lbl{font-size:9px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:var(--ink3);padding:0 12px 5px}
+.sb-grp{margin-bottom:11px}
+.agt{display:flex;align-items:center;gap:7px;width:100%;padding:6px 12px;border:none;background:none;cursor:pointer;text-align:left;transition:background .1s;border-left:2.5px solid transparent}
+.agt:hover{background:var(--s2)}.agt.on{background:var(--s2);border-left-color:var(--acc)}
+.ava{width:25px;height:25px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:600;flex-shrink:0}
+.agi{flex:1;min-width:0}
+.agn{font-size:11.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.agr{font-size:9.5px;color:var(--ink3)}
+.pdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sb-foot{margin-top:auto;border-top:1px solid var(--bd);padding-top:6px}
+.sb-action{display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;border:none;background:none;cursor:pointer;font-family:'Sora',sans-serif;transition:background .12s}
+.sb-action:hover{background:var(--s2)}
+.sb-action.on{background:var(--acc);color:#fff}
+.sb-action-ico{font-size:15px;flex-shrink:0}
+.sb-action-lbl{font-size:11.5px;font-weight:600;color:inherit}
+.sb-action-sub{font-size:9.5px;color:inherit;opacity:.6}
+
+/* ══ MAIN ══ */
+.main{padding:18px 20px;overflow-y:auto}
+.page-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:4px}
+.page-sub{font-size:11px;color:var(--ink3);margin-bottom:14px}
+.chtop{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:13px}
+.atit{display:flex;align-items:center;gap:10px}
+.avlg{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600}
+.anm{font-family:'Playfair Display',serif;font-size:19px;line-height:1.1}
+.amt{font-size:11px;color:var(--ink2);margin-top:2px}
+.pbdg{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500}
+.b-top{background:var(--pine-l);color:var(--pine)}.b-avg{background:var(--gold-l);color:var(--gold)}.b-low{background:var(--rust-l);color:var(--rust)}.b-n{background:var(--s3);color:var(--ink3)}
+
+/* ══ TABS ══ */
+.tabs{display:flex;border-bottom:1px solid var(--bd);margin-bottom:13px}
+.tab{padding:6px 13px;font-size:11.5px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--ink2);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .14s;font-family:'Sora',sans-serif;display:flex;align-items:center;gap:4px}
+.tab.on{color:var(--ink);border-bottom-color:var(--acc)}
+.tbdg{padding:1px 5px;border-radius:9px;font-size:9px;font-weight:600}
+.tbdg.r{background:var(--rust-l);color:var(--rust)}.tbdg.b{background:var(--ocean-l);color:var(--ocean)}.tbdg.g{background:var(--pine-l);color:var(--pine)}
+
+/* ══ KPI CARDS ══ */
+.kgrid{display:grid;gap:7px;margin-bottom:11px}
+.kc{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;position:relative;overflow:hidden}
+.kc::after{content:'';position:absolute;top:0;left:0;right:0;height:2.5px}
+.kc.ok::after{background:var(--pine)}.kc.warn::after{background:#d97706}.kc.bad::after{background:#dc2626}.kc.neu::after{background:var(--bd)}
+.kl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:4px}
+.kv{font-size:20px;font-weight:300;color:var(--ink);line-height:1;font-family:'Playfair Display',serif}
+.kv small{font-size:11px;color:var(--ink2);font-weight:400;font-family:'Sora',sans-serif}
+.kt{font-size:9px;color:var(--ink3);margin-top:2px}
+
+/* ══ COACH BOX ══ */
+.coach-box{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:11px 13px;margin-bottom:11px}
+.coach-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.chk-lbl{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:500}
+.chk-lbl input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--acc)}
+.cdate-row{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink2)}
+.cdate-row input[type=date]{border:1px solid var(--bd);border-radius:5px;padding:3px 7px;font-size:11px;font-family:'Sora',sans-serif;background:var(--s2);color:var(--ink);outline:none}
+.att-row{display:flex;align-items:center;gap:7px;margin-top:7px;flex-wrap:wrap}
+.att-btn{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;border:1px dashed var(--bd2);background:var(--s2);color:var(--ink2);font-size:11px;cursor:pointer;transition:all .14s;font-family:'Sora',sans-serif}
+.att-btn:hover{border-color:var(--acc);color:var(--acc)}
+.att-file{display:flex;align-items:center;gap:5px;padding:4px 9px;background:var(--pine-l);border-radius:6px;font-size:11px;color:var(--pine);font-weight:500;cursor:pointer;border:1px solid #7fcfa0}
+.att-file:hover{background:#bde4ca}.att-fn{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ══ CARDS ══ */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.card{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:12px}
+.ct{font-size:11.5px;font-weight:600;color:var(--ink);margin-bottom:9px;display:flex;align-items:center;justify-content:space-between}
+.ct span{font-size:10px;font-weight:400;color:var(--ink3)}
+.ch{position:relative;height:125px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.fr{display:flex;flex-direction:column;gap:2px}
+.fl{font-size:10.5px;font-weight:500;color:var(--ink2)}
+.fi{padding:5px 7px;border:1px solid var(--bd);border-radius:5px;font-size:12.5px;font-family:'Sora',sans-serif;background:var(--s2);color:var(--ink);outline:none;transition:border-color .14s}
+.fi:focus{border-color:var(--acc)}
+.fh{font-size:9px;color:var(--ink3)}
+.fta{width:100%;padding:6px 7px;border:1px solid var(--bd);border-radius:5px;font-size:12px;font-family:'Sora',sans-serif;background:var(--s2);color:var(--ink);resize:vertical;outline:none}
+.fta:focus{border-color:var(--acc)}
+.qual-box{background:var(--s3);border-radius:6px;padding:8px 10px;margin-top:8px}
+.qual-ttl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:6px}
+.sect-lbl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:6px}
+
+/* ══ EMAIL/AP ══ */
+.ec{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:12px;margin-bottom:10px}
+.etop{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.ebtns{display:flex;gap:5px}
+.ebody{background:var(--s2);border:1px solid var(--bd);border-radius:5px;padding:10px 12px;font-size:12.5px;line-height:1.85;color:var(--ink);white-space:pre-wrap;min-height:80px}
+.ap-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.apst{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:9px}
+.apst-ico{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.apst-v{font-family:'Playfair Display',serif;font-size:20px;line-height:1}
+.apst-l{font-size:9.5px;color:var(--ink3);margin-top:1px}
+.ap-new{background:var(--surf);border:2px dashed var(--bd2);border-radius:8px;padding:12px;margin-bottom:11px}
+.ap-new-ttl{font-size:11.5px;font-weight:600;margin-bottom:10px}
+.ap-g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:7px}
+.ap-g2{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px}
+.ap-list{display:flex;flex-direction:column;gap:7px}
+.api{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:11px 12px;border-left:3.5px solid var(--bd)}
+.api.s-prog{border-left-color:#3b82f6}.api.s-done{border-left-color:var(--pine)}.api.s-cancel{border-left-color:var(--rust)}.api.s-pend{border-left-color:#d1d5db}
+.api-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:9px;margin-bottom:6px}
+.api-ttl{font-size:12px;font-weight:600}
+.api-sub{font-size:10px;color:var(--ink3);margin-top:1px}
+.fdate{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:11px;font-size:10.5px;font-weight:500}
+.fd-ok{background:var(--pine-l);color:var(--pine)}.fd-due{background:var(--gold-l);color:var(--gold)}.fd-over{background:var(--rust-l);color:var(--rust)}
+.stpill{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:12px;font-size:10.5px;font-weight:500;flex-shrink:0}
+.st-none{background:#f3f4f6;color:#6b7280}.st-prog{background:var(--ocean-l);color:var(--ocean)}.st-done{background:var(--pine-l);color:var(--pine)}.st-cancel{background:var(--rust-l);color:var(--rust)}
+.itrow{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+.itag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:12px;font-size:10.5px;font-weight:500}
+.itag.iss{background:var(--rust-l);color:var(--rust)}
+.aplan-txt{font-size:11.5px;color:var(--ink2);line-height:1.65;white-space:pre-wrap;background:var(--s2);border:1px solid var(--bd);border-radius:5px;padding:8px 10px;margin-top:7px}
+.ap-empty{text-align:center;padding:22px;color:var(--ink3);font-size:12px}
+
+/* ══ MONTHLY ══ */
+.mtabs{display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap}
+.mtab{padding:3px 10px;border-radius:16px;font-size:11px;font-weight:500;border:1px solid var(--bd);background:var(--surf);color:var(--ink2);cursor:pointer;transition:all .14s;font-family:'Sora',sans-serif}
+.mtab.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.mstats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:11px}
+.msc{background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:10px 12px}
+.msl{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:2px}
+.msv{font-family:'Playfair Display',serif;font-size:19px;color:var(--ink)}
+.mss{font-size:9.5px;color:var(--ink3);margin-top:1px}
+.mt{width:100%;border-collapse:collapse;font-size:11.5px}
+.mt th{text-align:left;padding:4px 8px;font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);border-bottom:1px solid var(--bd)}
+.mt td{padding:6px 8px;border-bottom:1px solid var(--bd);color:var(--ink)}
+.mt tr:last-child td{border-bottom:none}.mt tr:hover td{background:var(--s2)}
+.cpill{display:inline-block;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:500}
+
+/* ══ TEAM VIEW ══ */
+.tp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:14px}
+.tp-kc{background:var(--surf);border:1px solid var(--bd);border-radius:9px;padding:13px 15px;text-align:center}
+.tp-val{font-family:'Playfair Display',serif;font-size:28px;color:var(--ink);line-height:1}
+.tp-lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-top:4px}
+.ac{background:var(--surf);border:1px solid var(--bd);border-radius:9px;overflow:hidden;margin-bottom:9px}
+.ac-hdr{display:flex;align-items:center;gap:10px;padding:11px 13px;border-bottom:1px solid var(--bd);cursor:pointer}
+.ac-hdr:hover{background:var(--s2)}
+.ac-body{padding:12px 13px;display:none}.ac-body.open{display:block}
+.ac-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:10px}
+.acs{background:var(--s2);border-radius:6px;padding:7px 9px;text-align:center}
+.acs-v{font-family:'Playfair Display',serif;font-size:17px;color:var(--ink)}
+.acs-l{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-top:1px}
+.email-list{display:flex;flex-direction:column;gap:6px}
+.email-item{display:flex;align-items:center;gap:9px;padding:7px 10px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;cursor:pointer;transition:all .14s}
+.email-item:hover{border-color:var(--bd2);background:var(--s3)}
+.ew{font-size:10.5px;font-weight:600;color:var(--ink2);flex-shrink:0;width:28px}
+.ed{font-size:10px;color:var(--ink3);flex-shrink:0;width:70px}
+.en{font-size:11px;color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.et{font-size:9.5px;padding:1px 6px;border-radius:9px;flex-shrink:0}
+.et-pdf{background:var(--rust-l);color:var(--rust)}.et-eml{background:var(--ocean-l);color:var(--ocean)}.et-oth{background:var(--s3);color:var(--ink3)}
+
+/* ══ ADMIN PANEL ══ */
+.admin-section{background:var(--surf);border:1px solid var(--bd);border-radius:9px;padding:16px;margin-bottom:14px}
+.admin-section-ttl{font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.admin-section-ttl .ico{font-size:16px}
+.agent-chip{display:flex;align-items:center;gap:7px;background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:6px 10px;margin-bottom:6px}
+.agent-chip input{flex:1;border:none;background:none;font-family:'Sora',sans-serif;font-size:12px;color:var(--ink);outline:none}
+.del-btn{padding:2px 7px;border-radius:5px;border:1px solid var(--rust-l);background:none;color:var(--rust);cursor:pointer;font-size:10px;font-family:'Sora',sans-serif}
+.del-btn:hover{background:var(--rust-l)}
+.kpi-config{display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:7px;align-items:end;margin-bottom:6px}
+.kpi-config label{font-size:10px;color:var(--ink3);display:block;margin-bottom:2px}
+.week-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;background:var(--s2);border:1px solid var(--bd);border-radius:6px;font-size:11px;margin:3px}
+.week-chip button{border:none;background:none;cursor:pointer;color:var(--rust);font-size:12px;padding:0 2px;line-height:1}
+.admin-note{font-size:10.5px;color:var(--ink3);background:var(--gold-l);border:1px solid #e6c87a;border-radius:6px;padding:8px 10px;line-height:1.6;margin-top:8px}
+
+/* ══ GUIDE PANEL ══ */
+.guide-card{background:var(--surf);border:1px solid var(--bd);border-radius:9px;padding:16px;margin-bottom:11px}
+.guide-step{display:flex;gap:11px;margin-bottom:14px}
+.gnum{width:26px;height:26px;border-radius:50%;background:var(--acc);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.g-ttl{font-size:12.5px;font-weight:600;margin-bottom:4px}
+.g-ds{font-size:12px;color:var(--ink2);line-height:1.65}
+.code-bl{background:#18160F;color:#E8E5DF;border-radius:7px;padding:11px 13px;font-family:monospace;font-size:11px;line-height:1.75;margin:6px 0;position:relative;white-space:pre-wrap;word-break:break-all}
+.cc-btn{position:absolute;top:6px;right:7px;padding:2px 7px;border-radius:4px;font-size:9.5px;background:#ffffff18;color:#E8E5DF;border:none;cursor:pointer;font-family:'Sora',sans-serif}
+.cc-btn:hover{background:#ffffff28}
+.guide-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:12px;font-size:10.5px;font-weight:500;margin:3px}
+.gb-github{background:#24292e;color:#fff}.gb-free{background:var(--pine-l);color:var(--pine)}.gb-warn{background:var(--gold-l);color:var(--gold)}
+
+/* ══ FILE VIEWER ══ */
+.fv-ov{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;display:flex;align-items:center;justify-content:center;padding:18px}
+.fv-mod{background:var(--surf);border-radius:11px;width:100%;max-width:760px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
+.fv-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--bd);flex-shrink:0}
+.fv-ttl{font-size:13.5px;font-weight:600}
+.fv-body{flex:1;overflow:auto;padding:16px;background:var(--s2)}
+.fv-text{white-space:pre-wrap;font-size:12.5px;line-height:1.8;color:var(--ink);font-family:'Sora',sans-serif}
+.fv-pdf{width:100%;height:480px;border:none;border-radius:5px}
+.fv-img{max-width:100%;border-radius:5px}
+
+/* ══ CONNECT MODAL ══ */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:500;display:flex;align-items:center;justify-content:center;padding:18px}
+.mod{background:var(--surf);border-radius:12px;padding:22px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto}
+.mod-ttl{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:4px}
+.mod-sub{font-size:11.5px;color:var(--ink2);margin-bottom:14px}
+.stog-row{display:flex;gap:6px;margin-bottom:13px}
+.stog{padding:4px 12px;border-radius:7px;font-size:11.5px;font-weight:500;border:1px solid var(--bd);background:var(--surf);color:var(--ink2);cursor:pointer;font-family:'Sora',sans-serif}
+.stog.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.sbl{display:flex;gap:9px;margin-bottom:11px}
+.snum{width:20px;height:20px;border-radius:50%;background:var(--acc);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.st-ttl{font-size:12px;font-weight:600;margin-bottom:3px}
+.st-ds{font-size:11.5px;color:var(--ink2);line-height:1.6}
+.codebl{background:#18160F;color:#E8E5DF;border-radius:7px;padding:11px 13px;font-family:monospace;font-size:10.5px;line-height:1.75;margin:6px 0;position:relative;overflow-x:auto;white-space:pre;max-height:320px;overflow-y:auto}
+.cc{position:absolute;top:6px;right:7px;padding:2px 7px;border-radius:4px;font-size:9.5px;background:#ffffff18;color:#E8E5DF;border:none;cursor:pointer;font-family:'Sora',sans-serif}
+.csa{width:100%;padding:6px 8px;border:1px solid var(--bd);border-radius:6px;font-size:11.5px;font-family:'Sora',sans-serif;background:var(--s2);color:var(--ink);outline:none;margin-top:3px}
+.csa:focus{border-color:var(--acc)}
+.csva{width:100%;padding:6px 8px;border:1px solid var(--bd);border-radius:6px;font-size:11px;font-family:monospace;background:var(--s2);color:var(--ink);resize:vertical;outline:none;height:100px}
+
+/* ══ BTNS ══ */
+.btn{display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border-radius:6px;font-size:11.5px;font-weight:500;cursor:pointer;border:1px solid var(--bd);background:var(--surf);color:var(--ink);transition:all .14s;font-family:'Sora',sans-serif;white-space:nowrap}
+.btn:hover{border-color:var(--bd2);background:var(--s2)}
+.btn.pr{background:var(--acc);color:#fff;border-color:var(--acc)}.btn.pr:hover{background:#2a2820}
+.btn.gr{background:var(--pine);color:#fff;border-color:var(--pine)}
+.btn.sm{padding:3px 7px;font-size:10.5px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+
+/* ══ CREDIT+ AI ASSISTANT ══ */
+.cpbot-fab{position:fixed;right:18px;bottom:18px;z-index:650;width:52px;height:52px;border-radius:18px;border:1px solid var(--bd);background:#18160F;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 14px 35px rgba(0,0,0,.22);cursor:pointer;font-size:22px;transition:transform .14s,box-shadow .14s}
+.cpbot-fab:hover{transform:translateY(-2px);box-shadow:0 18px 42px rgba(0,0,0,.26)}
+.cpbot{position:fixed;right:18px;bottom:82px;z-index:650;width:min(392px,calc(100vw - 28px));height:min(610px,calc(100vh - 105px));background:var(--surf);border:1px solid var(--bd);border-radius:16px;box-shadow:0 24px 70px rgba(0,0,0,.22);display:none;flex-direction:column;overflow:hidden}
+.cpbot.open{display:flex;animation:fi .16s ease}
+.cpbot-h{padding:12px 14px;background:#18160F;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.cpbot-brand{display:flex;align-items:center;gap:9px;min-width:0}.cpbot-brand img{width:30px;height:30px;border-radius:7px;object-fit:cover;border:1px solid rgba(255,255,255,.18)}
+.cpbot-title{font-size:13px;font-weight:700;line-height:1}.cpbot-sub{font-size:10px;opacity:.72;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cpbot-x{border:none;background:rgba(255,255,255,.12);color:#fff;border-radius:8px;padding:4px 8px;cursor:pointer;font-family:'Sora',sans-serif}
+.cpbot-body{flex:1;overflow:auto;padding:12px;background:var(--s2);display:flex;flex-direction:column;gap:8px}
+.cpmsg{max-width:88%;border-radius:13px;padding:9px 11px;font-size:12px;line-height:1.55;white-space:pre-wrap;border:1px solid var(--bd)}
+.cpmsg.bot{background:var(--surf);color:var(--ink);align-self:flex-start}.cpmsg.user{background:#18160F;color:#fff;align-self:flex-end;border-color:#18160F}
+.cpbot-quick{display:flex;gap:5px;flex-wrap:wrap;padding:8px 10px;border-top:1px solid var(--bd);background:var(--surf)}
+.cpquick{border:1px solid var(--bd);background:var(--s2);border-radius:999px;padding:4px 8px;font-size:10.5px;cursor:pointer;color:var(--ink2);font-family:'Sora',sans-serif}.cpquick:hover{border-color:var(--acc);color:var(--acc)}
+.cpbot-in{display:flex;gap:7px;padding:10px;border-top:1px solid var(--bd);background:var(--surf)}
+.cpbot-in textarea{flex:1;min-height:38px;max-height:88px;resize:none;border:1px solid var(--bd);background:var(--s2);border-radius:10px;padding:9px 10px;font-family:'Sora',sans-serif;font-size:12px;outline:none;color:var(--ink)}
+.cpbot-in textarea:focus{border-color:var(--acc)}
+.cpbot-send{width:42px;border:none;border-radius:10px;background:#18160F;color:#fff;cursor:pointer;font-size:16px}
+.cpbot-hint{font-size:10px;color:var(--ink3);padding:0 12px 9px;background:var(--surf)}
+@media(max-width:720px){.cpbot{right:10px;bottom:74px;height:calc(100vh - 90px)}.cpbot-fab{right:12px;bottom:12px}}
+
+
+
+/* VERIFIED LOGIN LAYER */
+.cp-login-screen{position:fixed;inset:0;z-index:2147483647;background:#F0EEE8;display:flex;align-items:center;justify-content:center;padding:20px}
+.cp-login-card{width:100%;max-width:410px;background:#fff;border:1px solid #DDD9CF;border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.16);font-family:'Sora',sans-serif}
+.cp-login-brand{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.cp-login-brand img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid #DDD9CF}
+.cp-login-title{font-family:'Playfair Display',serif;font-size:24px;color:#18160F}
+.cp-login-sub{font-size:11.5px;color:#928E82;margin-top:2px}
+.cp-login-field{margin-bottom:11px}
+.cp-login-field label{display:block;font-size:10.5px;font-weight:700;color:#524E43;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
+.cp-login-field input{width:100%;padding:11px;border:1px solid #DDD9CF;border-radius:8px;background:#F6F4EF;color:#18160F;font-size:13px;outline:none;font-family:'Sora',sans-serif}
+.cp-login-field input:focus{background:#fff;border-color:#18160F}
+.cp-login-error{min-height:18px;color:#7A1818;font-size:11.5px;margin:3px 0 10px}
+.cp-login-btn{width:100%;border:none;border-radius:8px;background:#18160F;color:#fff;padding:11px 12px;font-weight:700;cursor:pointer;font-family:'Sora',sans-serif}
+.cp-login-btn:hover{background:#2a2820}
+.cp-user-pill{display:none;align-items:center;gap:7px;background:#F6F4EF;border:1px solid #DDD9CF;border-radius:7px;padding:4px 8px;font-size:10.5px;color:#524E43;margin-left:auto}
+
+
+.cp-signout-btn{display:none;align-items:center;gap:6px;border:1px solid #DDD9CF;background:#fff;color:#524E43;border-radius:7px;padding:5px 9px;font-size:10.5px;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif}
+.cp-signout-btn:hover{background:#F6F4EF;border-color:#C5C0B3;color:#18160F}
+
+
+/* AGENT READ-ONLY MODE */
+body.cp-agent-readonly .tab[onclick*="input"],
+body.cp-agent-readonly .tab[onclick*="manual"],
+body.cp-agent-readonly button[onclick*="save"],
+body.cp-agent-readonly button[onclick*="Save"],
+body.cp-agent-readonly button[onclick*="add"],
+body.cp-agent-readonly button[onclick*="delete"],
+body.cp-agent-readonly button[onclick*="edit"],
+body.cp-agent-readonly button[onclick*="Admin"],
+body.cp-agent-readonly #btn-admin,
+body.cp-agent-readonly #btn-guide,
+body.cp-agent-readonly #btn-team,
+body.cp-agent-readonly #btn-pip,
+body.cp-agent-readonly .ap-new,
+body.cp-agent-readonly .coach-box,
+body.cp-agent-readonly .admin-section,
+body.cp-agent-readonly .att-row,
+body.cp-agent-readonly .ebtns{display:none!important}
+body.cp-agent-readonly input,
+body.cp-agent-readonly textarea,
+body.cp-agent-readonly select{pointer-events:none!important}
+body.cp-agent-readonly input:not(#cp-login-email):not(#cp-login-password),
+body.cp-agent-readonly textarea{background:#f7f5f0!important;color:#524E43!important}
+body.cp-agent-readonly .btn.pr:not(#cp-login-button),
+body.cp-agent-readonly .btn.gr{display:none!important}
+.cp-readonly-note{display:none;background:#F5E6C8;border:1px solid #e6c87a;color:#7B4500;border-radius:8px;padding:8px 10px;font-size:11.5px;margin-bottom:10px}
+body.cp-agent-readonly .cp-readonly-note{display:block}
+
+
+body.cp-agent-readonly button[onclick*="clearCoach"],
+body.cp-agent-readonly button[onclick*="deleteCoach"],
+body.cp-agent-readonly button[onclick*="Tout"],
+body.cp-agent-readonly button[onclick*="coachStore"],
+body.cp-agent-readonly button[onclick*="saveInputs"]{display:none!important}
+
+
+/* AGENT NAVIGATION ALLOWED */
+body.cp-agent-readonly #wsel,
+body.cp-agent-readonly .wpill select{
+  pointer-events:auto!important;
+  opacity:1!important;
+  cursor:pointer!important;
+}
+body.cp-agent-readonly .vtog button,
+body.cp-agent-readonly #bw,
+body.cp-agent-readonly #bm{
+  pointer-events:auto!important;
+  display:inline-flex!important;
+  cursor:pointer!important;
+}
+body.cp-agent-readonly .wpill,
+body.cp-agent-readonly .vtog{
+  pointer-events:auto!important;
+}
+
+</style>
+</head>
+<body>
+
+<div class="cp-login-screen" id="cp-login-screen">
+  <div class="cp-login-card">
+    <div class="cp-login-brand">
+      <img src="data:image/png;base64,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" alt="Credit+">
+      <div><div class="cp-login-title">Credit+</div><div class="cp-login-sub">Team Dashboard · accès sécurisé</div></div>
+    </div>
+    <div class="cp-login-field"><label>Email</label><input id="cp-login-email" type="email" autocomplete="off" placeholder="prenom.nom@creditplus.ma"></div>
+    <div class="cp-login-field"><label>Mot de passe</label><input id="cp-login-password" type="password" autocomplete="off" placeholder="Mot de passe"></div>
+    <div class="cp-login-error" id="cp-login-error"></div>
+    <button type="button" class="cp-login-btn" id="cp-login-button">Se connecter</button>
+  </div>
+</div>
+
+<!-- FILE VIEWER -->
+<div class="fv-ov" id="fv-modal" style="display:none" onclick="if(event.target===this)closeFV()">
+  <div class="fv-mod">
+    <div class="fv-hdr">
+      <div class="fv-ttl" id="fv-title">Document</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn sm" id="fv-dl">⬇ Télécharger</button>
+        <button class="btn sm" onclick="closeFV()">✕</button>
+      </div>
+    </div>
+    <div class="fv-body" id="fv-body"></div>
+  </div>
+</div>
+
+
+<!-- CREDIT+ AI ASSISTANT -->
+<button class="cpbot-fab" id="cpbot-fab" onclick="cpBotToggle()" title="Assistant Credit+">💬</button>
+<div class="cpbot" id="cpbot">
+  <div class="cpbot-h">
+    <div class="cpbot-brand">
+      <img src="data:image/png;base64,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" alt="Credit+">
+      <div><div class="cpbot-title">Credit+ Assistant</div><div class="cpbot-sub" id="cpbot-sub">Performance · KPI · Planning</div></div>
+    </div>
+    <button class="cpbot-x" onclick="cpBotToggle(false)">✕</button>
+  </div>
+  <div class="cpbot-body" id="cpbot-body"></div>
+  <div class="cpbot-quick">
+    <button class="cpquick" onclick="cpBotAsk('Résumé performance de l’agent sélectionné')">Résumé</button>
+    <button class="cpquick" onclick="cpBotAsk('Heures travaillées')">Heures</button>
+    <button class="cpquick" onclick="cpBotAsk('KPI faibles et points à améliorer')">KPIs faibles</button>
+    <button class="cpquick" onclick="cpBotAsk('Planning de cette semaine')">Planning</button>
+  </div>
+  <div class="cpbot-in">
+    <textarea id="cpbot-input" placeholder="Pose une question sur performance, heures, KPIs, coaching, PIP, planning…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();cpBotSend();}"></textarea>
+    <button class="cpbot-send" onclick="cpBotSend()">➤</button>
+  </div>
+  <div class="cpbot-hint">Répond avec les données chargées dans le dashboard. Connecte Google Sheets pour les données à jour.</div>
+</div>
+
+<!-- CONNECT MODAL -->
+<div class="ov" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+<div class="mod">
+  <div class="mod-ttl">Connecter Google Sheets</div>
+  <div class="mod-sub">Apps Script (recommandé) ou CSV manuel</div>
+  <div class="stog-row">
+    <button class="stog on" onclick="showM('sc')" id="mb-sc">⚡ Apps Script</button>
+    <button class="stog" onclick="showM('csv')" id="mb-csv">📋 CSV Manuel</button>
+  </div>
+  <div id="m-sc">
+    <div class="sbl"><div class="snum">1</div><div>
+      <div class="st-ttl">Extensions → Apps Script → colle ce code → Ctrl+S</div>
+      <div class="codebl" id="ascode">var GEMINI_KEY=&#x27;COLLE_TA_CLE_GEMINI_ICI&#x27;;
+var DATA_SHEET=&#x27;_Data&#x27;;
+var COACHING_SHEET=&#x27;🗣 Coaching &amp; Briefings&#x27;;
+var PIP_SHEET=&#x27;PIPs Conducted&#x27;;
+var PLANNING_SHEET=&#x27;Raw Data&#x27;;
+var TZ=Session.getScriptTimeZone() || &#x27;Africa/Casablanca&#x27;;
+
+function doGet(e){
+  var cb=(e.parameter.callback||&#x27;cb&#x27;).replace(/[^a-zA-Z0-9_]/g,&#x27;&#x27;);
+  var act=e.parameter.action||&#x27;data&#x27;;
+  if(act===&#x27;ai&#x27;)return handleAI(e,cb);
+  return handleData(e,cb);
+}
+
+function handleData(e,cb){
+  try{
+    var ss=SpreadsheetApp.getActiveSpreadsheet();
+    var dataSheet=ss.getSheetByName(DATA_SHEET);
+    if(!dataSheet)return out(cb,{status:&#x27;error&#x27;,error:&#x27;Sheet &#x27;+DATA_SHEET+&#x27; introuvable&#x27;});
+    var values=dataSheet.getDataRange().getValues();
+    var hdrRow=findHeaderRow(values,[&#x27;Week #&#x27;,&#x27;Agent Name&#x27;]);
+    if(hdrRow&lt;0)return out(cb,{status:&#x27;error&#x27;,error:&#x27;Headers Week # / Agent Name introuvables dans &#x27;+DATA_SHEET});
+    var hdr=values[hdrRow].map(cleanHeader);
+    var rows=[];
+    var weekMap={};
+    var agentMap={};
+    for(var r=hdrRow+1;r&lt;values.length;r++){
+      var raw={};hdr.forEach(function(h,i){raw[h]=values[r][i];});
+      if(isBlank(raw[&#x27;Week #&#x27;])||isBlank(raw[&#x27;Agent Name&#x27;]))continue;
+      var norm=normalizeDataRow(raw);
+      rows.push(norm);
+      if(norm.Semaine){weekMap[norm.Semaine]={num:norm.Semaine,month:norm.Month||&#x27;&#x27;,start:norm[&#x27;Week Start&#x27;]||&#x27;&#x27;,end:norm[&#x27;Week End&#x27;]||&#x27;&#x27;};}
+      if(norm.Agent){agentMap[norm.Agent.toLowerCase()]={name:norm.Agent,role:norm[&#x27;Line of Business&#x27;]||&#x27;Customer Support&#x27;,type:guessType(norm[&#x27;Line of Business&#x27;])};}
+    }
+    var weeks=Object.keys(weekMap).map(function(k){return weekMap[k];}).sort(function(a,b){return a.num-b.num;});
+    var agents=Object.keys(agentMap).map(function(k){return agentMap[k];}).sort(function(a,b){return a.name.localeCompare(b.name);});
+    return out(cb,{status:&#x27;ok&#x27;,data:rows,coaching:readCoaching(ss),pips:readPIPs(ss),planning:readPlanning(ss),config:{weeks:weeks,agents:agents},updatedAt:new Date().toISOString()});
+  }catch(err){return out(cb,{status:&#x27;error&#x27;,error:err.toString()});}
+}
+
+function normalizeDataRow(raw){
+  var week=toNumber(raw[&#x27;Week #&#x27;]);
+  var wkStart=fmtDate(raw[&#x27;Week Start&#x27;]);
+  var wkEnd=fmtDate(raw[&#x27;Week End&#x27;]);
+  var qGlobal=percent(raw[&#x27;Quality score (Global)&#x27;]);
+  var qEmail=percent(raw[&#x27;Quality score Email&#x27;]);
+  var qCalls=percent(raw[&#x27;Quality score Calls&#x27;]);
+  return {
+    &#x27;Agent&#x27;: String(raw[&#x27;Agent Name&#x27;]||&#x27;&#x27;).trim(),
+    &#x27;Semaine&#x27;: week,
+    &#x27;Month&#x27;: monthName(raw[&#x27;Week Start&#x27;]),
+    &#x27;Line of Business&#x27;: String(raw[&#x27;LOB&#x27;]||&#x27;&#x27;).trim(),
+    &#x27;Team Leader&#x27;: String(raw[&#x27;Team Leader&#x27;]||&#x27;&#x27;).trim(),
+    &#x27;Week Start&#x27;: wkStart,
+    &#x27;Week End&#x27;: wkEnd,
+    &#x27;Emails Handled&#x27;: safeNumber(raw[&#x27;Emails&#x27;]),
+    &#x27;Emails&#x27;: safeNumber(raw[&#x27;Emails&#x27;]),
+    &#x27;Calls&#x27;: safeNumber(raw[&#x27;Inbound calls&#x27;]),
+    &#x27;Inbound calls&#x27;: safeNumber(raw[&#x27;Inbound calls&#x27;]),
+    &#x27;Outbound Calls&#x27;: safeNumber(raw[&#x27;Outbound Calls&#x27;]),
+    &#x27;Chats&#x27;: safeNumber(raw[&#x27;Chat&#x27;]),
+    &#x27;Chat&#x27;: safeNumber(raw[&#x27;Chat&#x27;]),
+    &#x27;Jira Tickets&#x27;: safeNumber(raw[&#x27;Jira Tickets created&#x27;]),
+    &#x27;Jira Tickets created&#x27;: safeNumber(raw[&#x27;Jira Tickets created&#x27;]),
+    &#x27;Total Contacts (auto)&#x27;: safeNumber(raw[&#x27;Total Contacts (auto)&#x27;]),
+    &#x27;Productivity&#x27;: round2(raw[&#x27;Productivity&#x27;]),
+    &#x27;AHT (min)&#x27;: ahtMinutes(raw[&#x27;Avg AHT (min )&#x27;]),
+    &#x27;Avg AHT (min)&#x27;: ahtMinutes(raw[&#x27;Avg AHT (min )&#x27;]),
+    &#x27;Quality score (Global)&#x27;: qGlobal,
+    &#x27;Qualité Email (%)&#x27;: qEmail,
+    &#x27;Qualite (%)&#x27;: qEmail,
+    &#x27;Quality score Email&#x27;: qEmail,
+    &#x27;Qualité Téléphone (%)&#x27;: qCalls,
+    &#x27;Quality score Calls&#x27;: qCalls,
+    &#x27;Total hrs worked&#x27;: safeNumber(raw[&#x27;Total hrs worked&#x27;])
+  };
+}
+
+function readCoaching(ss){
+  var sh=ss.getSheetByName(COACHING_SHEET);if(!sh)return [];
+  var v=sh.getDataRange().getValues();
+  var outRows=[];
+  for(var i=3;i&lt;v.length;i++){
+    var agent=String(v[i][8]||&#x27;&#x27;).trim();
+    if(!agent)continue;
+    outRows.push({agent:agent,date:fmtDate(v[i][9]),coach:String(v[i][10]||&#x27;&#x27;).trim(),focus:String(v[i][11]||&#x27;&#x27;).trim(),issue:String(v[i][12]||&#x27;&#x27;).trim(),actionPlan:String(v[i][13]||&#x27;&#x27;).trim(),followUpDate:fmtDate(v[i][14]),status:String(v[i][15]||&#x27;&#x27;).trim()});
+  }
+  return outRows;
+}
+
+function readPIPs(ss){
+  var sh=ss.getSheetByName(PIP_SHEET);if(!sh)return [];
+  var v=sh.getDataRange().getValues();
+  var hdrRow=findHeaderRow(v,[&#x27;Agent&#x27;]);if(hdrRow&lt;0)return [];
+  var hdr=v[hdrRow].map(cleanHeader), rows=[];
+  for(var r=hdrRow+1;r&lt;v.length;r++){
+    var raw={};hdr.forEach(function(h,i){raw[h]=v[r][i];});
+    if(isBlank(raw[&#x27;Agent&#x27;]))continue;
+    rows.push({agent:String(raw[&#x27;Agent&#x27;]||&#x27;&#x27;).trim(),start:fmtDate(raw[&#x27;Start Date&#x27;]||raw[&#x27;PIP Start&#x27;]||raw[&#x27;Date&#x27;]),due:fmtDate(raw[&#x27;Due Date&#x27;]||raw[&#x27;Follow-Up Date&#x27;]||raw[&#x27;End Date&#x27;]),status:String(raw[&#x27;Status&#x27;]||&#x27;En cours&#x27;).trim(),objective:String(raw[&#x27;Objective&#x27;]||raw[&#x27;Reason&#x27;]||raw[&#x27;KPI Focus&#x27;]||&#x27;&#x27;).trim(),closureDate:fmtDate(raw[&#x27;Closure Date&#x27;]||raw[&#x27;Closed Date&#x27;]),closureNote:String(raw[&#x27;Closure Note&#x27;]||raw[&#x27;Closure&#x27;]||&#x27;&#x27;).trim()});
+  }
+  return rows;
+}
+
+function readPlanning(ss){
+  var sh=ss.getSheetByName(PLANNING_SHEET);if(!sh)return [];
+  var v=sh.getDataRange().getValues();
+  var hdrRow=findHeaderRow(v,[&#x27;Agent&#x27;,&#x27;Day&#x27;,&#x27;Shift&#x27;]);if(hdrRow&lt;0)return [];
+  var hdr=v[hdrRow].map(cleanHeader),rows=[];
+  for(var r=hdrRow+1;r&lt;v.length;r++){
+    var raw={};hdr.forEach(function(h,i){raw[h]=v[r][i];});
+    var agent=String(raw[&#x27;Agent&#x27;]||&#x27;&#x27;).trim();
+    if(!agent||agent===&#x27; &#x27;)continue;
+    rows.push({week:String(raw[&#x27;Week&#x27;]||&#x27;&#x27;).trim(),agent:agent,dept:String(raw[&#x27;Department&#x27;]||&#x27;&#x27;).trim(),day:String(raw[&#x27;Day&#x27;]||&#x27;&#x27;).trim(),shift:String(raw[&#x27;Shift&#x27;]||&#x27;OFF&#x27;).trim()});
+  }
+  return rows;
+}
+function handleAI(e,cb){
+  var prompt=e.parameter.prompt||&#x27;&#x27;;
+  if(!prompt)return out(cb,{error:&#x27;Prompt vide&#x27;});
+  try{
+    var url=&#x27;https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=&#x27;+GEMINI_KEY;
+    var res=UrlFetchApp.fetch(url,{method:&#x27;post&#x27;,contentType:&#x27;application/json&#x27;,payload:JSON.stringify({contents:[{role:&#x27;user&#x27;,parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:1200,temperature:0.4}}),muteHttpExceptions:true});
+    var j=JSON.parse(res.getContentText());
+    var txt=j.candidates&amp;&amp;j.candidates[0]&amp;&amp;j.candidates[0].content&amp;&amp;j.candidates[0].content.parts&amp;&amp;j.candidates[0].content.parts[0]?j.candidates[0].content.parts[0].text:&#x27;&#x27;;
+    return out(cb,{text:txt||&#x27;Vide&#x27;,status:&#x27;ok&#x27;});
+  }catch(err){return out(cb,{error:err.toString()});}
+}
+
+function findHeaderRow(values, required){
+  for(var r=0;r&lt;Math.min(values.length,20);r++){
+    var row=values[r].map(cleanHeader);
+    var ok=required.every(function(h){return row.indexOf(h)&gt;=0;});
+    if(ok)return r;
+  }
+  return -1;
+}
+function cleanHeader(x){return String(x||&#x27;&#x27;).replace(/\s+/g,&#x27; &#x27;).trim();}
+function isBlank(v){return v===null||v===&#x27;&#x27;||String(v).trim()===&#x27;&#x27;;}
+function toNumber(v){var n=Number(v);return isNaN(n)?&#x27;&#x27;:n;}
+function safeNumber(v){var n=Number(v);return isNaN(n)?&#x27;&#x27;:n;}
+function round2(v){var n=Number(v);return isNaN(n)?&#x27;&#x27;:Math.round(n*100)/100;}
+function percent(v){if(isBlank(v)||String(v).indexOf(&#x27;-%&#x27;)&gt;=0||String(v)===&#x27;-&#x27;)return &#x27;&#x27;;var n=Number(String(v).replace(&#x27;%&#x27;,&#x27;&#x27;).replace(&#x27;,&#x27;,&#x27;.&#x27;));if(isNaN(n))return &#x27;&#x27;;if(n&lt;=1)n=n*100;return Math.round(n*100)/100;}
+function ahtMinutes(v){if(isBlank(v)||String(v)===&#x27;-&#x27;)return &#x27;&#x27;;if(Object.prototype.toString.call(v)===&#x27;[object Date]&#x27;)return Math.round((v.getHours()*60+v.getMinutes()+v.getSeconds()/60)*100)/100;var s=String(v).trim();if(s.indexOf(&#x27;:&#x27;)&gt;0){var p=s.split(&#x27;:&#x27;).map(Number);return Math.round(((p[0]||0)*60+(p[1]||0)+(p[2]||0)/60)*100)/100;}var n=Number(s.replace(&#x27;,&#x27;,&#x27;.&#x27;));if(isNaN(n))return &#x27;&#x27;;if(n&gt;0&amp;&amp;n&lt;1)n=n*1440;return Math.round(n*100)/100;}
+function fmtDate(v){if(!v)return &#x27;&#x27;;if(Object.prototype.toString.call(v)===&#x27;[object Date]&#x27;)return Utilities.formatDate(v,TZ,&#x27;yyyy-MM-dd&#x27;);if(typeof v===&#x27;number&#x27;)return Utilities.formatDate(new Date(Math.round((v-25569)*86400*1000)),TZ,&#x27;yyyy-MM-dd&#x27;);return String(v);}
+function monthName(v){var d=null;if(Object.prototype.toString.call(v)===&#x27;[object Date]&#x27;)d=v;else if(typeof v===&#x27;number&#x27;)d=new Date(Math.round((v-25569)*86400*1000));if(!d)return &#x27;&#x27;;return [&#x27;Janvier&#x27;,&#x27;Février&#x27;,&#x27;Mars&#x27;,&#x27;Avril&#x27;,&#x27;Mai&#x27;,&#x27;Juin&#x27;,&#x27;Juillet&#x27;,&#x27;Août&#x27;,&#x27;Septembre&#x27;,&#x27;Octobre&#x27;,&#x27;Novembre&#x27;,&#x27;Décembre&#x27;][d.getMonth()];}
+function guessType(lob){lob=String(lob||&#x27;&#x27;).toLowerCase();return lob.indexOf(&#x27;sm&#x27;)&gt;=0||lob.indexOf(&#x27;social&#x27;)&gt;=0?&#x27;sm&#x27;:&#x27;ep&#x27;;}
+function out(cb,obj){return ContentService.createTextOutput(cb+&#x27;(&#x27;+JSON.stringify(obj)+&#x27;);&#x27;).setMimeType(ContentService.MimeType.JAVASCRIPT);} 
+<button class="cc" onclick="copyCode()">Copier</button></div>
+      <div style="margin-top:5px;font-size:11px;color:var(--ink2)">Remplace <code style="background:var(--s3);padding:1px 3px;border-radius:3px">COLLE_TA_CLE_GEMINI_ICI</code> → Google AI Studio → API Keys</div>
+    </div></div>
+    <div class="sbl"><div class="snum">2</div><div><div class="st-ttl">Déployer → Gérer → ✏️ → Nouvelle version → Enregistrer</div></div></div>
+    <div class="sbl"><div class="snum">3</div><div>
+      <div class="st-ttl">Colle l'URL /exec</div>
+      <input class="csa" id="sc-url" placeholder="https://script.google.com/macros/s/…/exec" value="https://script.google.com/macros/s/AKfycbyZZQKuhmZWnFJxpqCdgPXdWIPX-tFptYTzSXuOfW6c-clOwxOgnuVQz5EK5Pet35Hdag/exec"/>
+    </div></div>
+    <div style="display:flex;gap:7px;margin-top:12px;justify-content:space-between">
+      <button class="btn" onclick="closeModal()">Fermer</button>
+      <button class="btn pr" onclick="loadScript()">⚡ Charger</button>
+    </div>
+  </div>
+  <div id="m-csv" style="display:none">
+    <div class="sbl"><div class="snum">1</div><div><div class="st-ttl">Sheets → onglet _Data → Fichier → Télécharger → CSV</div></div></div>
+    <div class="sbl"><div class="snum">2</div><div><div class="st-ttl">Ouvre le CSV avec Notepad, copie tout, colle ici :</div>
+    <textarea class="csva" id="csv-paste" placeholder="Week #,Week Start,Week End,LOB,Team Leader,Agent Name,Emails,Inbound calls,Outbound Calls,Chat,..."></textarea>
+    </div></div>
+    <div style="display:flex;gap:7px;margin-top:12px;justify-content:space-between">
+      <button class="btn" onclick="closeModal()">Fermer</button>
+      <button class="btn pr" onclick="loadCSV()">📋 Charger</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- HEADER -->
+<header class="hdr">
+  <a class="logo" href="#">
+    <img class="logo-img" src="data:image/png;base64,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" alt="Credit+">
+    <div><div class="logo-name">Credit+</div><span class="logo-tag">Team Dashboard</span></div>
+  </a>
+  <div class="hdr-mid">
+    <div class="conn-wrap" onclick="openModal()">
+      <span style="font-size:13px">📊</span>
+      <input type="text" id="disp-url" placeholder="Clique pour connecter Google Sheets…" readonly/>
+      <div class="sdot" id="sdot"></div>
+    </div>
+    <span class="slbl" id="slbl">Non connecté</span>
+  </div>
+  <div class="auth-user-pill" id="auth-user-pill"></div><div class="cp-user-pill" id="cp-user-pill"></div><button type="button" class="cp-signout-btn" id="cp-signout-btn">Se déconnecter</button><div class="hdr-r">
+    <div class="user-pill" id="user-pill" style="display:none"></div>
+    <button class="logout-btn" id="logout-btn" onclick="authLogout()" style="display:none">Déconnexion</button>
+    <div class="wpill">📅
+      <select id="wsel" onchange="onWkChange()"></select>
+    </div>
+    <div class="vtog">
+      <button class="vb on" id="bw" onclick="setView('weekly')">Hebdo</button>
+      <button class="vb" id="bm" onclick="setView('monthly')">Mensuel</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <aside class="sb">
+    <div class="sb-grp"><div class="sb-lbl">Email &amp; Téléphone</div><div id="sb-ep"></div></div>
+    <div class="sb-grp"><div class="sb-lbl">Social Media</div><div id="sb-sm"></div></div>
+    <div class="sb-foot">
+      <button class="sb-action" id="btn-planning" onclick="goPlanning()">
+        <span class="sb-action-ico">📅</span>
+        <div><div class="sb-action-lbl">Planning</div><div class="sb-action-sub">Horaires & plannings</div></div>
+      </button>
+      <button class="sb-action" id="btn-team" onclick="goTeam()">
+        <span class="sb-action-ico">🏆</span>
+        <div><div class="sb-action-lbl">Team Performance</div><div class="sb-action-sub">Vue globale équipe</div></div>
+      </button>
+      <button class="sb-action" id="btn-pip" onclick="goPip()">
+        <span class="sb-action-ico">🧾</span>
+        <div><div class="sb-action-lbl">PIPs Conducted</div><div class="sb-action-sub">Pièces & clôtures</div></div>
+      </button>
+      <button class="sb-action" id="btn-admin" onclick="goAdmin()">
+        <span class="sb-action-ico">⚙️</span>
+        <div><div class="sb-action-lbl">Admin &amp; Config</div><div class="sb-action-sub">Agents, semaines, KPIs</div></div>
+      </button>
+      <button class="sb-action" id="btn-guide" onclick="goGuide()">
+        <span class="sb-action-ico">📖</span>
+        <div><div class="sb-action-lbl">Guide Mise à Jour</div><div class="sb-action-sub">GitHub sans code</div></div>
+      </button>
+    </div>
+  </aside>
+  <main class="main" id="main">
+    <div class="noag fade">
+      <div style="font-size:40px;opacity:.13">📋</div>
+      <div style="font-size:14px;font-weight:600;color:var(--ink2)">Bienvenue, Badr</div>
+      <div style="font-size:11.5px;color:var(--ink3);margin-top:4px;max-width:280px">Connecte ton Google Sheets puis sélectionne un agent</div>
+      <button class="btn pr" style="margin-top:12px" onclick="openModal()">📊 Connecter Google Sheets</button>
+    </div>
+  </main>
+</div>
+
+<script>
+
+// ══════════════════════════════════════════════════════════
+// ── AUTH / AGENT ACCESS ──────────────────────────────────
+// ══════════════════════════════════════════════════════════
+
+window.currentUser=null;
+function authNorm(s){return String(s||'').trim().toLowerCase();}
+function authFindAgentIndex(agentName){return CONFIG.agents.findIndex(a=>normName(a.name)===normName(agentName));}
+function authIsManager(){return currentUser&&currentUser.role==='manager';}
+function authAllowedAgentIndex(){return currentUser&&!authIsManager()?authFindAgentIndex(currentUser.agent):-1;}
+function authIsAllowedAgent(i){if(authIsManager())return true;const ai=authAllowedAgentIndex();return ai>=0&&parseInt(i)===ai;}
+
+
+
+
+
+
+// ══════════════════════════════════════════════════════════
+// ── CONFIG (modifiable depuis Admin) ──────────────────────
+// ══════════════════════════════════════════════════════════
+let CONFIG = {
+  agents: [
+    {name:"Oussama Fadmi",  ini:"OF",  role:"Customer Activation", type:"ep",bg:"#dbeafe",tc:"#1e3a8a"},
+    {name:"Mouad Ouazna",   ini:"MO",  role:"Customer Support",    type:"ep",bg:"#d1fae5",tc:"#064e3b"},
+    {name:"Younes Metgoul", ini:"YM",  role:"Customer Support",    type:"ep",bg:"#fef9c3",tc:"#713f12"},
+    {name:"Rakfaoui Asmaa", ini:"RA",  role:"Customer Support",    type:"ep",bg:"#ede9fe",tc:"#4c1d95"},
+    {name:"Rhounaim Asmaa", ini:"RA2", role:"Customer Support",    type:"ep",bg:"#fce7f3",tc:"#831843"},
+    {name:"Ikram Oukrim",   ini:"IO",  role:"CS / Social Media",   type:"sm",bg:"#ffedd5",tc:"#7c2d12"},
+    {name:"Malak Dehbi",    ini:"MD",  role:"CS / Social Media",   type:"sm",bg:"#dcfce7",tc:"#14532d"},
+    {name:"Aicha Moustaoui",ini:"AM",  role:"CS / Social Media",   type:"sm",bg:"#e0f2fe",tc:"#0c4a6e"},
+  ],
+  weeks: [
+    {num:1,month:"Janvier"},{num:2,month:"Janvier"},{num:3,month:"Janvier"},{num:4,month:"Janvier"},
+    {num:5,month:"Février"},{num:6,month:"Février"},{num:7,month:"Février"},{num:8,month:"Février"},
+    {num:9,month:"Mars"},{num:10,month:"Mars"},{num:11,month:"Mars"},{num:12,month:"Mars"},{num:13,month:"Mars"},
+    {num:14,month:"Avril"},{num:15,month:"Avril"},{num:16,month:"Avril"},{num:17,month:"Avril"},
+    {num:18,month:"Mai"},{num:19,month:"Mai"},{num:20,month:"Mai"},{num:21,month:"Mai"},{num:22,month:"Mai"},
+  ],
+  kpis: [
+    {id:"emailsHandled",label:"Emails Handled",unit:"",target:null,dir:"gte",vol:true},
+    {id:"calls",label:"Calls",unit:"",target:null,dir:"gte",vol:true},
+    {id:"aht",label:"AHT (min)",unit:" min",target:7,dir:"lte",vol:false},
+    {id:"chats",label:"Chats",unit:"",target:null,dir:"gte",vol:true},
+    {id:"jira",label:"Jira Tickets",unit:"",target:null,dir:"gte",vol:true},
+    {id:"productivity",label:"Productivity",unit:"",target:7,dir:"gte",vol:false},
+    {id:"totalHrs",label:"Total Hours Worked",unit:" h",target:null,dir:"gte",vol:false},
+    {id:"qualEmail",label:"Qualité Email (%)",unit:"%",target:90,dir:"gte",vol:false},
+    {id:"qualPhone",label:"Qualité Téléphone (%)",unit:"%",target:90,dir:"gte",vol:false},
+  ]
+};
+
+function saveConfig(){try{localStorage.setItem('cp_config',JSON.stringify(CONFIG));}catch(e){}}
+function loadConfig(){try{const s=localStorage.getItem('cp_config');if(s)CONFIG=JSON.parse(s);}catch(e){}}
+loadConfig();
+
+// ══════════════════════════════════════════════════════════
+// ── STATE ─────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+let store={},apStore={},coachStore={},pipStore={};
+let selA=null,curPage='agent',view='weekly',activeMth='Mars',activeTab='kpis';
+let charts=[],lastEmail='',scriptUrl='',connected=false,pendingAPText='',autoRefreshTimer=null,lastSheetUpdate='',currentWeek=null;
+
+const CACHE_KEY='cp_dashboard_state_v2';
+function saveDashboardState(){
+  try{
+    localStorage.setItem(CACHE_KEY,JSON.stringify({
+      store,apStore,coachStore,pipStore,CONFIG,
+      selA,curPage,view,activeMth,activeTab,lastSheetUpdate,scriptUrl,connected,
+      currentWeek, savedAt:new Date().toISOString()
+    }));
+  }catch(e){console.warn('Cache not saved',e);}
+}
+function loadDashboardState(){
+  try{
+    const raw=localStorage.getItem(CACHE_KEY);if(!raw)return;
+    const st=JSON.parse(raw);
+    if(st.CONFIG)CONFIG=st.CONFIG;
+    store=st.store||{};apStore=st.apStore||{};coachStore=st.coachStore||{};pipStore=st.pipStore||{};
+    selA=Number.isInteger(st.selA)?st.selA:null;curPage=st.curPage||'agent';view=st.view||'weekly';
+    activeMth=st.activeMth||'Mars';activeTab=st.activeTab||'kpis';lastSheetUpdate=st.lastSheetUpdate||'';
+    scriptUrl=st.scriptUrl||scriptUrl||'';connected=!!st.connected;currentWeek=st.currentWeek||currentWeek;
+  }catch(e){console.warn('Cache not loaded',e);}
+}
+function saveManualData(){
+  if(selA!==null)saveInputs(selA,getWeek());
+  saveDashboardState();
+  setSS('ok','✓ Données sauvegardées localement');
+  const btn=document.getElementById('save-data-btn');
+  if(btn){const old=btn.textContent;btn.textContent='✓ Sauvegardé';setTimeout(()=>btn.textContent=old,1500);}
+}
+
+function key(ai,w){return'a'+ai+'_w'+w;}
+function getData(ai,w){
+  const k=key(ai,w);
+  if(!store[k]){const d={};CONFIG.kpis.forEach(kp=>d[kp.id]='');d.totalHrs='';d.issues='';d.coaching='';d.apStatus='';store[k]=d;}
+  return store[k];
+}
+function getCoach(ai,w){const k=key(ai,w);if(!coachStore[k])coachStore[k]={checked:false,date:'',fileName:'',fileData:null,fileType:''};return coachStore[k];}
+function getWeek(){const el=document.getElementById('wsel');return parseInt(el&&el.value?el.value:currentWeek);}
+function monthOf(wNum){const w=CONFIG.weeks.find(x=>x.num===wNum);return w?w.month:'—';}
+function allMonths(){return[...new Set(CONFIG.weeks.map(w=>w.month))];}
+loadDashboardState();
+
+function saveInputs(ai,w){
+  const k=key(ai,w),d=store[k]||{};
+  CONFIG.kpis.forEach(kp=>{const el=document.getElementById('inp_'+kp.id);if(el)d[kp.id]=el.value;});
+  const ca=document.getElementById('inp_coaching');if(ca)d.coaching=ca.value;
+  const chk=document.getElementById('coach-chk'),cdate=document.getElementById('coach-date');
+  if(chk){const c=coachStore[k]||{};c.checked=chk.checked;c.date=cdate?cdate.value:'';coachStore[k]=c;}
+  store[k]=d;
+  saveDashboardState();
+}
+
+// ── WEEK SELECT BUILDER ──────────────────────────────────
+function buildWeekSelect(preferredWeek){
+  const sel=document.getElementById('wsel');
+  const prev=preferredWeek||currentWeek||parseInt(sel.value)||null;
+  sel.innerHTML='';
+  CONFIG.weeks.forEach(w=>{const o=document.createElement('option');o.value=w.num;o.textContent='S'+w.num+' — '+w.month;sel.appendChild(o);});
+  const nums=CONFIG.weeks.map(w=>parseInt(w.num));
+  if(prev&&nums.includes(parseInt(prev))) sel.value=parseInt(prev);
+  else if(nums.length) sel.value=nums[nums.length-1];
+  currentWeek=parseInt(sel.value)||currentWeek;
+}
+buildWeekSelect(currentWeek);
+
+// ══════════════════════════════════════════════════════════
+// ── MODALS ────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+function openModal(){document.getElementById('modal').style.display='flex';}
+function closeModal(){document.getElementById('modal').style.display='none';}
+function showM(m){
+  document.getElementById('m-sc').style.display=m==='sc'?'block':'none';
+  document.getElementById('m-csv').style.display=m==='csv'?'block':'none';
+  document.getElementById('mb-sc').className='stog'+(m==='sc'?' on':'');
+  document.getElementById('mb-csv').className='stog'+(m==='csv'?' on':'');
+}
+function copyCode(){navigator.clipboard.writeText(document.getElementById('ascode').innerText.replace('Copier','').trim()).then(()=>{const b=document.querySelector('.cc');b.textContent='✓';setTimeout(()=>b.textContent='Copier',2000);});}
+
+// ── FILE VIEWER ──────────────────────────────────────────
+function openFV(name,data,type){
+  document.getElementById('fv-title').textContent=name;
+  document.getElementById('fv-dl').onclick=()=>{const a=document.createElement('a');a.href=data;a.download=name;a.click();};
+  const body=document.getElementById('fv-body');body.innerHTML='';
+  if(type&&type.startsWith('image/')){const img=document.createElement('img');img.className='fv-img';img.src=data;body.appendChild(img);}
+  else if(type==='application/pdf'){const f=document.createElement('iframe');f.className='fv-pdf';f.src=data;body.appendChild(f);}
+  else{const pre=document.createElement('pre');pre.className='fv-text';try{pre.textContent=atob(data.split(',')[1]);}catch{pre.textContent=data;}body.appendChild(pre);}
+  document.getElementById('fv-modal').style.display='flex';
+}
+function closeFV(){document.getElementById('fv-modal').style.display='none';}
+function ftCls(n){if(!n)return'et-oth';const e=n.split('.').pop().toLowerCase();if(e==='pdf')return'et-pdf';if(['eml','msg','html','htm'].includes(e))return'et-eml';return'et-oth';}
+function ftLbl(n){return n?n.split('.').pop().toUpperCase():'';}
+
+// ══════════════════════════════════════════════════════════
+// ── DATA LOADING ──────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+function fetchJSONP(url,cb){
+  const id='_cb'+Date.now();
+  const t=setTimeout(()=>{cleanup();cb(null,'Timeout');},60000);
+  function cleanup(){delete window[id];const s=document.getElementById('js-'+id);if(s)s.remove();clearTimeout(t);}
+  window[id]=d=>{cleanup();cb(d,null);};
+  const s=document.createElement('script');s.id='js-'+id;
+  s.onerror=()=>{cleanup();cb(null,'Script error — vérifie le Apps Script');};
+  s.src=url+(url.includes('?')?'&':'?')+'callback='+id;
+  document.head.appendChild(s);
+}
+
+function cleanScriptBaseUrl(url){
+  return String(url||'').trim().split('?')[0];
+}
+function dataEndpoint(url){
+  const base=cleanScriptBaseUrl(url);
+  return base + '?action=data';
+}
+function aiEndpoint(url,prompt){
+  const base=cleanScriptBaseUrl(url);
+  return base + '?action=ai&prompt=' + encodeURIComponent(prompt);
+}
+function draftEndpoint(url,to,subject,body){
+  const base=cleanScriptBaseUrl(url);
+  return base + '?action=draft&to=' + encodeURIComponent(to) + '&subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+}
+function callAI(prompt,onOk,onErr){
+  if(!scriptUrl){onErr('Connecte d\'abord Google Sheets');return;}
+  fetchJSONP(aiEndpoint(scriptUrl,prompt),(d,e)=>{
+    if(e||!d){onErr(e||'Réponse invalide');return;}
+    if(d.status==='error')onErr(d.error||'Erreur IA');else if(d.text)onOk(d.text);else onErr(d.error||'Réponse IA vide');
+  });
+}
+function applySheetConfig(cfg){
+  if(!cfg)return;
+  if(Array.isArray(cfg.weeks)&&cfg.weeks.length){
+    CONFIG.weeks=cfg.weeks.map(w=>({num:parseInt(w.num),month:w.month||monthOf(parseInt(w.num))||'—',start:w.start||'',end:w.end||''})).filter(w=>w.num).sort((a,b)=>a.num-b.num);
+    buildWeekSelect(currentWeek);
+  }
+  if(Array.isArray(cfg.agents)&&cfg.agents.length){
+    const palette=[['#dbeafe','#1e3a8a'],['#d1fae5','#064e3b'],['#fef9c3','#713f12'],['#ede9fe','#4c1d95'],['#fce7f3','#831843'],['#ffedd5','#7c2d12'],['#dcfce7','#14532d'],['#e0f2fe','#0c4a6e']];
+    cfg.agents.forEach((ag,idx)=>{
+      const name=(ag.name||'').trim();if(!name)return;
+      if(CONFIG.agents.some(a=>a.name.toLowerCase()===name.toLowerCase()))return;
+      const p=palette[CONFIG.agents.length%palette.length];
+      CONFIG.agents.push({name,ini:name.split(/\s+/).map(x=>x[0]).join('').slice(0,3).toUpperCase(),role:ag.role||'Customer Support',type:ag.type||'ep',bg:p[0],tc:p[1]});
+    });
+  }
+}
+function ingestPayload(d){
+  if(d.config)applySheetConfig(d.config);
+  const cnt=parseJSON(d.data||[]);
+  if(Array.isArray(d.coaching))parseCoaching(d.coaching);
+  if(Array.isArray(d.pips))parseSheetPIPs(d.pips);
+  if(Array.isArray(d.planning))parsePlanning(d.planning);
+  lastSheetUpdate=d.updatedAt||'';
+  return cnt;
+}
+function parsePlanning(rows){
+  const data={};
+  rows.forEach(r=>{
+    const week=r.week,agent=(r.agent||'').trim(),dept=(r.dept||'').trim(),day=(r.day||'').trim(),shift=(r.shift||'OFF').trim();
+    if(!week||!agent||agent===' '||!day)return;
+    if(!data[week])data[week]={};
+    if(!data[week][agent])data[week][agent]={dept,days:{}};
+    data[week][agent].days[day]=shift;
+  });
+  if(Object.keys(data).length>0){
+    PLANNING_DATA=data;
+    // Reset week selector to most recent
+    const weeks=Object.keys(PLANNING_DATA).sort((a,b)=>new Date(b.replace('Semaine du ',''))-new Date(a.replace('Semaine du ','')));
+    planningWeek=weeks[0]||planningWeek;
+  }
+}
+function startAutoRefresh(){
+  if(autoRefreshTimer)clearInterval(autoRefreshTimer);
+  autoRefreshTimer=setInterval(()=>{if(scriptUrl&&connected)reloadData(true);},60000);
+}
+function loadScript(){
+  const url=document.getElementById('sc-url').value.trim();if(!url)return;
+  scriptUrl=url;localStorage.setItem('cp_script_url',url);setSS('spin','Chargement…');
+  fetchJSONP(dataEndpoint(url),(d,e)=>{
+    if(e||!d||d.status==='error'){setSS('err','Erreur');alert('❌ '+( e||d.error||'Réponse invalide')+'\n\n• Code Apps Script complet collé ?\n• Déployé en nouvelle version ?\n• Accès: Toute personne ?');return;}
+    const cnt=ingestPayload(d);finishLoad(cleanScriptBaseUrl(url),cnt);startAutoRefresh();
+  });
+}
+function loadCSV(){const txt=document.getElementById('csv-paste').value.trim();if(!txt)return;const cnt=parseCSV(txt);finishLoad('CSV manuel',cnt);}
+function finishLoad(src,cnt){
+  setSS('ok','✓ '+cnt+' lignes synchronisées');connected=true;
+  document.getElementById('disp-url').value=src.length>50?src.slice(0,50)+'…':src;
+  /* auth handled by verified login */saveDashboardState();closeModal();renderSidebar();if(selA!==null&&curPage==='agent')renderContent();if(curPage==='team')renderTeam();if(curPage==='pip')renderPIPs();if(curPage==='planning')renderPlanning();
+}
+
+function normName(s){return (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();}
+function cell(row,keys){for(const k of keys){if(row[k]!==undefined&&row[k]!==null&&row[k]!=='')return row[k];}return '';}
+function numClean(v){if(v===null||v===undefined||v===''||v==='-'||v==='-%')return '';const n=parseFloat(String(v).replace('%','').replace(',','.'));return isNaN(n)?'':n;}
+function pctClean(v){let n=numClean(v);if(n==='' )return '';if(n<=1)n=n*100;return Math.round(n*100)/100;}
+function parseJSON(rows){
+  let n=0;
+  rows.forEach(row=>{
+    const agentName=cell(row,['Agent','Agent Name']);
+    let ai=CONFIG.agents.findIndex(a=>normName(a.name)===normName(agentName));
+    if(ai<0&&agentName){
+      const colors=[['#dbeafe','#1e3a8a'],['#d1fae5','#064e3b'],['#fef9c3','#713f12'],['#ede9fe','#4c1d95'],['#fce7f3','#831843'],['#ffedd5','#7c2d12'],['#dcfce7','#14532d'],['#e0f2fe','#0c4a6e']];
+      const c=colors[CONFIG.agents.length%colors.length];
+      CONFIG.agents.push({name:agentName,ini:agentName.split(/\s+/).map(x=>x[0]).join('').slice(0,3).toUpperCase(),role:cell(row,['Line of Business','LOB'])||'Customer Support',type:(cell(row,['Line of Business','LOB']).toLowerCase().includes('sm')?'sm':'ep'),bg:c[0],tc:c[1]});
+      ai=CONFIG.agents.length-1;
+    }
+    const w=parseInt(cell(row,['Semaine','Week #','Week']));
+    if(ai<0||!w)return;
+    const d={};
+    CONFIG.kpis.forEach(kp=>{d[kp.id]=cell(row,[kp.label,kp.id]);});
+    d.emailsHandled=cell(row,['Emails Handled','Emails','emailsHandled']);
+    d.calls=cell(row,['Calls','Inbound calls','Inbound Calls','calls']);
+    d.outboundCalls=cell(row,['Outbound Calls','outboundCalls']);
+    d.chats=cell(row,['Chats','Chat','chats']);
+    d.jira=cell(row,['Jira Tickets','Jira Tickets created','jira']);
+    d.totalContacts=cell(row,['Total Contacts (auto)','Total Contacts','totalContacts']);
+    d.productivity=cell(row,['Productivity','productivity']);
+    d.aht=cell(row,['AHT (min)','Avg AHT (min)','Avg AHT (min )','aht']);
+    d.qualGlobal=pctClean(cell(row,['Quality score (Global)','qualGlobal']));
+    d.qualEmail=pctClean(cell(row,['Qualité Email (%)','Qualite (%)','Quality score Email','qualEmail']));
+    d.qualPhone=pctClean(cell(row,['Qualité Téléphone (%)','Quality score Calls','qualPhone']));
+    d.totalHrs=cell(row,['Total hrs worked','totalHrs']);
+    d.weekStart=cell(row,['Week Start']);d.weekEnd=cell(row,['Week End']);
+    d.issues=cell(row,['Problemes Qualite','Problèmes Qualite','Observed Issue','issues']);
+    d.coaching=cell(row,['Notes Coaching','Action Plan','coaching']);
+    d.apStatus=cell(row,['Statut Plan Action','Status','apStatus']);
+    store[key(ai,w)]=d;n++;
+  });return n;
+}
+function parseCoaching(rows){
+  rows.forEach(r=>{
+    const ai=CONFIG.agents.findIndex(a=>normName(a.name)===normName(r.agent));if(ai<0)return;
+    const wk=CONFIG.weeks.find(w=>r.date&&w.start&&r.date>=w.start&&r.date<=w.end);
+    const w=wk?wk.num:getWeek();
+    const c=getCoach(ai,w);c.checked=true;c.date=r.date||c.date;c.coach=r.coach||'';c.focus=r.focus||'';c.issue=r.issue||'';c.actionPlan=r.actionPlan||'';c.status=r.status||'';coachStore[key(ai,w)]=c;
+  });
+}
+function parseSheetPIPs(rows){
+  rows.forEach((r,idx)=>{
+    const ai=CONFIG.agents.findIndex(a=>normName(a.name)===normName(r.agent));if(ai<0)return;
+    const id='sheet_pip_'+ai+'_'+(r.start||idx)+'_'+idx;
+    pipStore[id]={id,ai,start:r.start||'',due:r.due||'',status:r.status||'En cours',objective:r.objective||'',fileName:'',fileData:null,fileType:'',closureDate:r.closureDate||'',closureFileName:'',closureFileData:null,closureFileType:'',closureNote:r.closureNote||''};
+  });
+}
+function parseCSV(text){
+  const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);if(lines.length<2)return 0;
+  const hdrs=parseLine(lines[0]);let n=0;
+  for(let i=1;i<lines.length;i++){
+    const vals=parseLine(lines[i]),row={};hdrs.forEach((h,j)=>row[h]=vals[j]||'');
+    const ai=CONFIG.agents.findIndex(a=>a.name.toLowerCase()===(row['Agent']||'').trim().toLowerCase());
+    const w=parseInt(row['Semaine']);if(ai<0||isNaN(w))continue;
+    const d={};CONFIG.kpis.forEach(kp=>d[kp.id]=(row[kp.label]||row[kp.id]||'').toString().trim());
+    if(!d.qualEmail)d.qualEmail=row['Qualite (%)'||'Qualité (%)']||'';
+    d.issues=row['Problemes Qualite']||'';d.coaching=row['Notes Coaching']||'';d.apStatus=row['Statut Plan Action']||'';
+    store[key(ai,w)]=d;n++;
+  }return n;
+}
+function parseLine(l){const r=[];let c='',q=false;for(let i=0;i<l.length;i++){const ch=l[i];if(ch==='"')q=!q;else if(ch===','&&!q){r.push(c.trim());c='';}else c+=ch;}r.push(c.trim());return r;}
+function setSS(s,l){document.getElementById('sdot').className='sdot '+s;document.getElementById('slbl').textContent=l;}
+
+// ══════════════════════════════════════════════════════════
+// ── PERF ──────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+function perf(d){
+  let s=0,t=0;
+  CONFIG.kpis.filter(k=>k.target!==null&&!k.vol&&k.id!=='totalHrs').forEach(kp=>{
+    if(d[kp.id]==='')return;t++;const v=parseFloat(d[kp.id]);
+    if((kp.dir==='gte'&&v>=kp.target)||(kp.dir==='lte'&&v<=kp.target))s++;
+  });
+  if(t===0)return'neutral';const r=s/t;return r>=0.8?'top':r>=0.5?'avg':'low';
+}
+function bCls(lv){return lv==='top'?'b-top':lv==='avg'?'b-avg':lv==='low'?'b-low':'b-n';}
+function bLbl(lv){return lv==='top'?'⭐ Top Performer':lv==='avg'?'📊 Moyen':lv==='low'?'⚠️ À Améliorer':'—';}
+function kst(v,kp){
+  if(v===''||v===null||kp.target===null)return'neu';
+  const n=parseFloat(v);
+  if(kp.dir==='gte')return n>=kp.target?'ok':n>=kp.target*.88?'warn':'bad';
+  return n<=kp.target?'ok':n<=kp.target*1.12?'warn':'bad';
+}
+function dotC(lv){return lv==='top'?'#1A5435':lv==='avg'?'#d97706':lv==='low'?'#dc2626':'#d1d5db';}
+function stCls(s){if(!s||s.includes('Non')||s==='')return'st-none';if(s.includes('cours'))return'st-prog';if(s.includes('Compl')||s.includes('compl'))return'st-done';if(s.includes('Annul'))return'st-cancel';return'st-none';}
+function stLbl(s){return(!s||s==='')?'Non démarré':s;}
+function iCls(s){if(!s||s.includes('Non')||s==='')return's-pend';if(s.includes('cours'))return's-prog';if(s.includes('Compl')||s.includes('compl'))return's-done';if(s.includes('Annul'))return's-cancel';return's-pend';}
+function fdCls(d){if(!d)return'fd-ok';const diff=(new Date(d)-new Date())/864e5;if(diff<0)return'fd-over';if(diff<=3)return'fd-due';return'fd-ok';}
+function fdLbl(d){if(!d)return'';const diff=Math.round((new Date(d)-new Date())/864e5);if(diff<0)return'⚠️ Dépassé '+Math.abs(diff)+'j';if(diff===0)return'🔴 Aujourd\'hui';if(diff<=3)return'🟡 Dans '+diff+'j';return'✅ '+d;}
+
+// ══════════════════════════════════════════════════════════
+// ── SIDEBAR ───────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+function renderSidebar(){
+  ['ep','sm'].forEach(type=>{
+    const el=document.getElementById('sb-'+type);el.innerHTML='';
+    CONFIG.agents.forEach((a,i)=>{
+      if(a.type!==type)return;
+      if(currentUser&&!authIsAllowedAgent(i))return;
+      const d=getData(i,getWeek()),lv=perf(d);
+      const apCnt=Object.values(apStore).filter(p=>p.ai===i&&p.status&&!p.status.includes('Non')).length;
+      const coachCnt=CONFIG.weeks.filter(w=>getCoach(i,w.num).checked).length;
+      const btn=document.createElement('button');
+      btn.className='agt'+(selA===i&&curPage==='agent'?' on':'');
+      btn.innerHTML=`<div class="ava" style="background:${a.bg};color:${a.tc}">${a.ini}</div>
+        <div class="agi"><div class="agn">${a.name}</div><div class="agr">${a.role}</div></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+          <div class="pdot" style="background:${dotC(lv)}"></div>
+          ${apCnt?`<span style="font-size:9px;background:#cfd9f5;color:#1a3878;border-radius:6px;padding:1px 4px">${apCnt}PA</span>`:''}
+          ${coachCnt?`<span style="font-size:9px;background:#cbe8d5;color:#1a5435;border-radius:6px;padding:1px 4px">✓${coachCnt}</span>`:''}
+        </div>`;
+      btn.onclick=()=>{if(currentUser&&!authIsAllowedAgent(i))return;if(selA!==null)saveInputs(selA,getWeek());selA=i;curPage='agent';lastEmail='';activeTab='kpis';['btn-team','btn-pip','btn-admin','btn-guide','btn-planning'].forEach(x=>{const el=document.getElementById(x);if(el)el.classList.remove('on');});renderSidebar();renderContent();};
+      el.appendChild(btn);
+    });
+  });
+  document.getElementById('btn-planning').className='sb-action'+(curPage==='planning'?' on':'');
+  document.getElementById('btn-team').className='sb-action'+(curPage==='team'?' on':'');
+  document.getElementById('btn-pip').className='sb-action'+(curPage==='pip'?' on':'');
+  document.getElementById('btn-admin').className='sb-action'+(curPage==='admin'?' on':'');
+  document.getElementById('btn-guide').className='sb-action'+(curPage==='guide'?' on':'');
+}
+
+// ══════════════════════════════════════════════════════════
+// ── PAGE ROUTER ───────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+function goTeam(){if(currentUser&&!authIsManager()){authGuardPage();renderSidebar();renderContent();return;}curPage='team';selA=null;renderSidebar();renderTeam();}
+function goPlanning(){curPage='planning';selA=(currentUser&&!authIsManager())?authAllowedAgentIndex():null;renderSidebar();renderPlanning();}
+function goPip(){if(currentUser&&!authIsManager()){authGuardPage();renderSidebar();renderContent();return;}curPage='pip';selA=null;renderSidebar();renderPIPs();}
+function goAdmin(){if(currentUser&&!authIsManager()){authGuardPage();renderSidebar();renderContent();return;}curPage='admin';selA=null;renderSidebar();renderAdmin();}
+function goGuide(){if(currentUser&&!authIsManager()){authGuardPage();renderSidebar();renderContent();return;}curPage='guide';selA=null;renderSidebar();renderGuide();}
+function setView(v){view=v;document.getElementById('bw').classList.toggle('on',v==='weekly');document.getElementById('bm').classList.toggle('on',v==='monthly');saveDashboardState();if(selA!==null&&curPage==='agent')renderContent();else if(curPage==='team')renderTeam();else if(curPage==='pip')renderPIPs();}
+function onWkChange(){
+  const newWeek=getWeek();
+  const oldWeek=currentWeek||newWeek;
+  if(selA!==null&&curPage==='agent'&&oldWeek!==newWeek)saveInputs(selA,oldWeek);
+  currentWeek=newWeek;lastEmail='';saveDashboardState();
+  if(selA!==null&&curPage==='agent')renderContent();else if(curPage==='team')renderTeam();else if(curPage==='pip')renderPIPs();
+  renderSidebar();
+}
+function renderContent(){destroyCharts();if(selA===null)return;view==='weekly'?renderWeekly():renderMonthly();}
+
+// ══════════════════════════════════════════════════════════
+// ── WEEKLY ────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+function renderWeekly(){
+  const a=CONFIG.agents[selA],w=getWeek(),d=getData(selA,w),lv=perf(d),coach=getCoach(selA,w);
+  const apAgent=Object.values(apStore).filter(p=>p.ai===selA);
+  const ongoing=apAgent.filter(p=>p.status&&p.status.includes('cours')).length;
+  const done=apAgent.filter(p=>p.status&&(p.status.includes('Compl')||p.status.includes('compl'))).length;
+  const issues=(d.issues||'').split(',').map(x=>x.trim()).filter(Boolean);
+  const banner=connected
+    ?`<div class="ban ok" style="justify-content:space-between"><span>✓ Sheets synchronisé — ${Object.keys(store).length} entrées</span><button class="btn sm" onclick="reloadData()">⟳</button></div>`
+    :`<div class="ban wa" style="justify-content:space-between"><span>⚠️ Saisie manuelle</span><button class="btn sm" onclick="openModal()">📊 Connecter</button></div>`;
+
+  // Separate vol KPIs and quality KPIs
+  const volKPIs=CONFIG.kpis.filter(k=>k.vol&&k.id!=='totalHrs');
+  const qualKPIs=CONFIG.kpis.filter(k=>!k.vol&&k.id!=='totalHrs');
+  const absKPI=CONFIG.kpis.find(k=>k.id==='totalHrs');
+
+  const volCards=volKPIs.map(kp=>`<div class="kc neu"><div class="kl">${kp.label}</div><div class="kv">${d[kp.id]||'—'}<small>${d[kp.id]?kp.unit:''}</small></div><div class="kt">${kp.target?'Cible '+kp.target+kp.unit:'Volume'}</div></div>`).join('');
+  const qualCards=qualKPIs.map(kp=>`<div class="kc ${kst(d[kp.id],kp)}" id="kc-${kp.id}"><div class="kl">${kp.label}</div><div class="kv" id="kv-${kp.id}">${d[kp.id]||'—'}<small>${d[kp.id]?kp.unit:''}</small></div><div class="kt">Cible ${kp.dir==='gte'?'≥':'≤'} ${kp.target}${kp.unit}</div></div>`).join('');
+  const absCard=absKPI?`<div class="kc neu" id="kc-totalHrs"><div class="kl">${absKPI.label}</div><div class="kv" id="kv-totalHrs">${d.totalHrs||'—'}<small>${d.totalHrs?' h':''}</small></div><div class="kt" id="totalHrs-tgt">Donnée source tracker</div></div>`:'';
+
+  const volCols=Math.min(volKPIs.length,5);
+  const qualCols=Math.min(qualKPIs.length+1,5);
+
+  document.getElementById('main').innerHTML=`<div class="fade">
+    ${banner}
+    <div class="chtop">
+      <div class="atit">
+        <div class="avlg" style="background:${a.bg};color:${a.tc}">${a.ini}</div>
+        <div><div class="anm">${a.name}</div><div class="amt">${a.role} · S${w} · ${monthOf(w)}</div></div>
+      </div>
+      <span class="pbdg ${bCls(lv)}" id="pbdg">${bLbl(lv)}</span>
+    </div>
+
+    <div class="sect-lbl">Volumes</div>
+    <div class="kgrid" style="grid-template-columns:repeat(${volCols},1fr)">${volCards}</div>
+
+    <div class="sect-lbl">Qualité &amp; Opérationnel</div>
+    <div class="kgrid" style="grid-template-columns:repeat(${qualCols},1fr)">${qualCards}${absCard}</div>
+
+    <div class="coach-box">
+      <div class="coach-row">
+        <label class="chk-lbl"><input type="checkbox" id="coach-chk" ${coach.checked?'checked':''} onchange="saveCoach()"/> ✓ 1:1 soumis S${w}</label>
+        <div class="cdate-row">Date : <input type="date" id="coach-date" value="${coach.date||''}" onchange="saveCoach()" ${!coach.checked?'disabled':''}/></div>
+      </div>
+      <div class="att-row">
+        <span style="font-size:11px;color:var(--ink2)">Email attaché :</span>
+        ${coach.fileName&&coach.fileData
+          ?`<div class="att-file" onclick="openFV('${coach.fileName}',coachStore['${key(selA,w)}'].fileData,coachStore['${key(selA,w)}'].fileType)">📄 <span class="att-fn">${coach.fileName}</span> <span class="${ftCls(coach.fileName)}">${ftLbl(coach.fileName)}</span></div>
+             <label class="att-btn" style="font-size:10px">✏️ Remplacer<input type="file" style="display:none" accept=".pdf,.eml,.msg,.txt,.html,.png,.jpg" onchange="handleFile(this)"/></label>
+             <button class="att-btn" type="button" style="border-color:var(--rust-l);color:var(--rust)" onclick="deleteCoachFile(${selA},${w})">🗑️ Supprimer email</button>`
+          :`<label class="att-btn">📎 Attacher l'email<input type="file" id="coach-file" style="display:none" accept=".pdf,.eml,.msg,.txt,.html,.png,.jpg" onchange="handleFile(this)"/></label>`}
+        ${coach.checked?`<button class="att-btn" type="button" style="border-color:var(--rust-l);color:var(--rust)" onclick="clearCoachSubmission(${selA},${w})">✕ Annuler 1:1</button>`:''}
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab ${activeTab==='kpis'?'on':''}" onclick="swTab('kpis')">📈 Saisie &amp; Graphiques</button>
+      <button class="tab ${activeTab==='email'?'on':''}" onclick="swTab('email')">✉️ Email 1:1</button>
+      <button class="tab ${activeTab==='action'?'on':''}" onclick="swTab('action')">
+        📋 Plans d'Action
+        ${ongoing?`<span class="tbdg b">${ongoing} en cours</span>`:''}
+        ${done?`<span class="tbdg g">${done}✓</span>`:''}
+        ${issues.length?`<span class="tbdg r">${issues.length}pb</span>`:''}
+      </button>
+    </div>
+    <div id="tc"></div>
+  </div>`;
+  swTab(activeTab,true);
+}
+
+function saveCoach(){
+  const chk=document.getElementById('coach-chk'),dt=document.getElementById('coach-date'),k=key(selA,getWeek());
+  if(chk){
+    const c=coachStore[k]||{};
+    if(chk.checked && !(c.fileName&&c.fileData)){
+      chk.checked=false;
+      c.checked=false;
+      coachStore[k]=c;
+      alert('Ajoute d’abord l’email en pièce jointe avant de marquer le 1:1 comme soumis.');
+      if(dt)dt.disabled=true;
+      renderSidebar();
+      saveDashboardState();
+      return;
+    }
+    c.checked=chk.checked;c.date=dt?dt.value:'';coachStore[k]=c;if(dt)dt.disabled=!chk.checked;
+  }
+  saveDashboardState();
+  renderSidebar();
+}
+function handleFile(input){
+  if(!input.files||!input.files[0])return;
+  const f=input.files[0],k=key(selA,getWeek()),reader=new FileReader();
+  reader.onload=e=>{
+    const c=coachStore[k]||{checked:true,date:''};
+    c.fileName=f.name;c.fileData=e.target.result;c.fileType=f.type||'text/plain';c.checked=true;if(!c.date)c.date=new Date().toISOString().slice(0,10);
+    coachStore[k]=c;saveDashboardState();renderWeekly();swTab(activeTab,true);renderSidebar();
+  };reader.readAsDataURL(f);
+}
+
+function deleteCoachFile(ai,w){
+  const k=key(ai,w),c=coachStore[k]||{};
+  if(!c.fileName&&!c.fileData)return;
+  if(!confirm('Supprimer l’email attaché pour S'+w+' ?'))return;
+  c.fileName='';c.fileData=null;c.fileType='';
+  coachStore[k]=c;saveDashboardState();renderSidebar();
+  if(curPage==='agent'&&selA===ai){view==='weekly'?renderWeekly():renderMonthly();}
+}
+function clearCoachSubmission(ai,w){
+  const k=key(ai,w),c=coachStore[k]||{};
+  if(!confirm('Annuler le statut 1:1 soumis pour S'+w+' ?'))return;
+  c.checked=false;c.date='';
+  coachStore[k]=c;saveDashboardState();renderSidebar();
+  if(curPage==='agent'&&selA===ai){view==='weekly'?renderWeekly():renderMonthly();}
+}
+function clearCoachAll(ai,w){
+  const k=key(ai,w),c=coachStore[k]||{};
+  if(!confirm('Supprimer l’email attaché et annuler le 1:1 pour S'+w+' ?'))return;
+  c.checked=false;c.date='';c.fileName='';c.fileData=null;c.fileType='';
+  coachStore[k]=c;saveDashboardState();renderSidebar();
+  if(curPage==='agent'&&selA===ai){view==='weekly'?renderWeekly():renderMonthly();}
+}
+
+function swTab(t,force){
+  if(!force&&activeTab===t)return;activeTab=t;
+  const tc=document.getElementById('tc');if(!tc)return;
+  document.querySelectorAll('.tab').forEach(b=>{const m=b.getAttribute('onclick').match(/'(\w+)'/);if(m)b.classList.toggle('on',m[1]===t);});
+  if(t==='kpis')renderKPIs(tc);else if(t==='email')renderEmail(tc);else renderAction(tc);
+}
+
+// ── KPIs TAB ─────────────────────────────────────────────
+function renderKPIs(tc){
+  const d=getData(selA,getWeek()),w=getWeek();
+  const nonAbsKPIs=CONFIG.kpis.filter(k=>k.id!=='totalHrs');
+  const inputs=nonAbsKPIs.map(kp=>`<div class="fr"><div class="fl">${kp.label}</div><input class="fi" type="number" id="inp_${kp.id}" value="${d[kp.id]||''}" placeholder="ex: ${kp.target||'—'}" step="0.1" min="0" oninput="liveUpd()"/>${kp.target?`<div class="fh">Cible ${kp.dir==='gte'?'≥':'≤'} ${kp.target}${kp.unit}</div>`:''}</div>`).join('');
+  tc.innerHTML=`<div class="two">
+    <div class="card">
+      <div class="ct">Saisie KPIs <span>S${w} · ${monthOf(w)}</span></div>
+      <div class="fg">${inputs}</div>
+      <div class="qual-box"><div class="qual-ttl">Qualité — par canal</div>
+        <div class="fg">
+          <div class="fr"><div class="fl">Qualité Email (%)</div><input class="fi" type="number" id="inp_qualEmail" value="${d.qualEmail||''}" placeholder="ex: 91" min="0" max="100" oninput="liveUpd()"/><div class="fh">Cible ≥ 90%</div></div>
+          <div class="fr"><div class="fl">Qualité Téléphone (%)</div><input class="fi" type="number" id="inp_qualPhone" value="${d.qualPhone||''}" placeholder="ex: 88" min="0" max="100" oninput="liveUpd()"/><div class="fh">Cible ≥ 90%</div></div>
+        </div>
+      </div>
+      <div class="fr" style="margin-top:8px"><div class="fl">Total Hours Worked</div><input class="fi" type="number" id="inp_totalHrs" value="${d.totalHrs||''}" min="0" step="0.01" oninput="liveUpd()"/><div class="fh">Source tracker · total hebdo</div></div>
+      <div class="fr" style="margin-top:8px"><div class="fl">Notes coaching</div><textarea class="fta" id="inp_coaching" rows="3" placeholder="Points observés…">${d.coaching||''}</textarea></div>
+      <div style="margin-top:10px;display:flex;justify-content:flex-end"><button class="btn gr" id="save-data-btn" onclick="saveManualData()">💾 Save Data</button></div>
+    </div>
+    <div class="card">
+      <div class="ct">Qualité Email vs Téléphone</div><div class="ch"><canvas id="ch-qual"></canvas></div>
+      <div style="margin-top:9px"><div class="ct" style="margin-bottom:6px">AHT &amp; Volumes</div><div class="ch"><canvas id="ch-vol"></canvas></div></div>
+    </div>
+  </div>`;drawCharts();
+}
+
+// ── EMAIL TAB ────────────────────────────────────────────
+function renderEmail(tc){
+  const c=getCoach(selA,getWeek());
+  tc.innerHTML=`<div class="ec">
+    <div class="etop">
+      <div>
+        <div class="ct" style="margin-bottom:0">✉️ Email 1:1 — IA</div>
+        <div style="font-size:10.5px;color:var(--ink3);margin-top:2px">Généré à partir des KPIs hebdomadaires affichés — aucune pièce jointe requise.</div>
+      </div>
+      <div class="ebtns">
+        <button class="btn" onclick="copyEmail()">📋 Copier</button>
+        <button class="btn pr" id="gen-btn" onclick="genEmail()">Générer</button>
+      </div>
+    </div>
+    <div class="fg" style="margin-bottom:9px;grid-template-columns:1fr auto">
+      <div class="fr">
+        <div class="fl">Adresse email du destinataire</div>
+        <input class="fi" type="email" id="email-to" value="${c.recipientEmail||''}" placeholder="ex: agent@creditplus.ma" oninput="saveEmailRecipient()"/>
+        <div class="fh">Utilisée pour créer le brouillon Gmail.</div>
+      </div>
+      <div style="display:flex;align-items:end">
+        <button class="btn gr" id="draft-btn" onclick="createEmailDraft()">📨 Créer brouillon Gmail</button>
+      </div>
+    </div>
+    <div class="ebody" id="ebody">${lastEmail||'Clique "Générer" pour créer un email 1:1 personnalisé basé sur les données hebdomadaires.'}</div>
+  </div>`;
+}
+
+function saveEmailRecipient(){
+  const el=document.getElementById('email-to');
+  const k=key(selA,getWeek());
+  const c=coachStore[k]||{};
+  c.recipientEmail=el?el.value.trim():'';
+  coachStore[k]=c;
+  saveDashboardState();
+}
+
+function isValidEmailAddress(v){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||'').trim());}
+
+function callDraft(to,subject,body,onOk,onErr){
+  if(!scriptUrl){onErr('Connecte d\'abord Google Sheets');return;}
+  const url=scriptUrl.split('?')[0]+'?action=draft&to='+encodeURIComponent(to)+'&subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+  fetchJSONP(url,(d,e)=>{
+    if(e||!d){onErr(e||'Réponse invalide');return;}
+    if(d.status==='ok')onOk(d);else onErr(d.error||'Erreur création brouillon');
+  });
+}
+
+function splitEmailSubjectAndBody(txt){
+  txt=String(txt||'').trim();
+  let subject='1:1 Weekly Performance';
+  let body=txt;
+  const lines=txt.split(/\r?\n/);
+  const first=lines[0]||'';
+  const m=first.match(/^\s*Objet\s*:\s*(.+)$/i);
+  if(m){
+    subject=m[1].trim();
+    body=lines.slice(1).join('\n').trim();
+  }
+  return {subject,body};
+}
+
+function createEmailDraft(){
+  const to=(document.getElementById('email-to')||{}).value||'';
+  const bodyEl=document.getElementById('ebody');
+  const txt=bodyEl?bodyEl.textContent.trim():'';
+  if(!isValidEmailAddress(to)){alert('Ajoute une adresse email valide avant de créer le brouillon Gmail.');return;}
+  if(!txt||txt.startsWith('Clique')||txt.startsWith('⏳')||txt.startsWith('❌')){alert('Génère d’abord l’email 1:1 avant de créer le brouillon.');return;}
+  const parts=splitEmailSubjectAndBody(txt);
+  const btn=document.getElementById('draft-btn');
+  if(btn){btn.disabled=true;btn.innerHTML='Création…';}
+  saveEmailRecipient();
+  callDraft(to,parts.subject,parts.body,
+    d=>{if(btn){btn.disabled=false;btn.innerHTML='✓ Brouillon créé';setTimeout(()=>btn.innerHTML='📨 Créer brouillon Gmail',2500);}alert('Brouillon Gmail créé avec succès.');},
+    err=>{if(btn){btn.disabled=false;btn.innerHTML='📨 Créer brouillon Gmail';}alert('❌ Erreur brouillon Gmail : '+err);}
+  );
+}
+
+// ── ACTION PLANS TAB ─────────────────────────────────────
+function renderAction(tc){
+  const w=getWeek();
+  const aps=Object.values(apStore).filter(p=>p.ai===selA).sort((a,b)=>new Date(a.fd||'9999')-new Date(b.fd||'9999'));
+  const prog=aps.filter(p=>p.status&&p.status.includes('cours')).length;
+  const done=aps.filter(p=>p.status&&(p.status.includes('Compl')||p.status.includes('compl'))).length;
+  const pend=aps.filter(p=>!p.status||p.status.includes('Non')).length;
+  const curIss=(getData(selA,w).issues||'').split(',').map(x=>x.trim()).filter(Boolean);
+  tc.innerHTML=`<div>
+    <div class="ap-stats">
+      <div class="apst"><div class="apst-ico" style="background:#cfd9f5">🔄</div><div><div class="apst-v" style="color:#1a3878">${prog}</div><div class="apst-l">En cours</div></div></div>
+      <div class="apst"><div class="apst-ico" style="background:var(--pine-l)">✅</div><div><div class="apst-v" style="color:var(--pine)">${done}</div><div class="apst-l">Complétés</div></div></div>
+      <div class="apst"><div class="apst-ico" style="background:#f3f4f6">⏳</div><div><div class="apst-v" style="color:#6b7280">${pend}</div><div class="apst-l">En attente</div></div></div>
+    </div>
+    <div class="ap-new">
+      <div class="ap-new-ttl">➕ Créer un plan d'action</div>
+      <div class="ap-g3">
+        <div class="fr"><div class="fl">Problème(s)</div><input class="fi" id="ap-issue" placeholder="ex: Grammaire, Branding…" value="${curIss.join(', ')}"/></div>
+        <div class="fr"><div class="fl">Statut</div><select class="fi" id="ap-status"><option>Non démarré</option><option>En cours</option><option>Complété</option></select></div>
+        <div class="fr"><div class="fl">Date de suivi</div><input class="fi" type="date" id="ap-follow"/></div>
+      </div>
+      <div class="ap-g2">
+        <div class="fr"><div class="fl">Semaine réf.</div>
+          <select class="fi" id="ap-week">${CONFIG.weeks.map(wk=>`<option value="${wk.num}" ${wk.num===w?'selected':''}>S${wk.num} — ${wk.month}</option>`).join('')}</select></div>
+        <div class="fr"><div class="fl">Notes</div><input class="fi" id="ap-note" placeholder="Contexte…"/></div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn pr" id="gen-ap-btn" onclick="genAP()">🤖 Générer plan IA</button>
+        <button class="btn" onclick="addAPManual()">+ Sans IA</button>
+      </div>
+      <div class="ebody" id="ap-prev" style="display:none;margin-top:9px"></div>
+      <div id="ap-savrow" style="display:none;margin-top:7px"><button class="btn gr" onclick="saveAP()">💾 Enregistrer</button></div>
+    </div>
+    <div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:7px">Historique — ${CONFIG.agents[selA].name}</div>
+    <div class="ap-list">
+      ${aps.length===0?`<div class="ap-empty">Aucun plan. Crée-en un ci-dessus.</div>`
+        :aps.map((p,idx)=>`<div class="api ${iCls(p.status)}">
+          <div class="api-hd">
+            <div>
+              <div class="api-ttl">${p.issues||'Plan général'} <span style="font-weight:400;font-size:10px;color:var(--ink3)">· S${p.week} ${monthOf(p.week)}</span></div>
+              <div class="api-sub">${p.note||''}</div>
+              ${p.fd?`<div style="margin-top:3px"><span class="fdate ${fdCls(p.fd)}">${fdLbl(p.fd)}</span></div>`:''}
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+              <span class="stpill ${stCls(p.status)}">${stLbl(p.status)}</span>
+              <select class="fi" style="font-size:10px;padding:2px 5px" onchange="updAPSt(${idx},this.value)">
+                <option ${p.status==='Non démarré'?'selected':''}>Non démarré</option>
+                <option ${p.status==='En cours'?'selected':''}>En cours</option>
+                <option ${p.status==='Complété'?'selected':''}>Complété</option>
+                <option ${p.status==='Annulé'?'selected':''}>Annulé</option>
+              </select>
+            </div>
+          </div>
+          ${p.issues?`<div class="itrow">${p.issues.split(',').map(x=>x.trim()).filter(Boolean).map(i=>`<span class="itag iss">⚠️ ${i}</span>`).join('')}</div>`:''}
+          ${p.planText?`<div class="aplan-txt">${p.planText}</div>`:''}
+          <div style="display:flex;gap:5px;margin-top:7px">
+            ${!p.planText?`<button class="btn sm pr" onclick="genAPExist(${idx})">🤖 IA</button>`:`<button class="btn sm" onclick="genAPExist(${idx})">♻️</button>`}
+            <button class="btn sm" onclick="copyAP(${idx})">📋</button>
+            <button class="btn sm" style="color:var(--rust)" onclick="delAP(${idx})">🗑</button>
+          </div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ── AP ACTIONS ───────────────────────────────────────────
+function addAPManual(){
+  const id='ap_'+Date.now();
+  apStore[id]={id,ai:selA,week:parseInt(document.getElementById('ap-week').value),
+    issues:document.getElementById('ap-issue').value.trim(),status:document.getElementById('ap-status').value,
+    fd:document.getElementById('ap-follow').value,note:document.getElementById('ap-note').value.trim(),planText:''};
+  saveDashboardState();swTab('action',true);
+}
+function genAP(){
+  const btn=document.getElementById('gen-ap-btn'),prev=document.getElementById('ap-prev'),savrow=document.getElementById('ap-savrow');
+  const issue=document.getElementById('ap-issue').value.trim(),note=document.getElementById('ap-note').value.trim();
+  const fd=document.getElementById('ap-follow').value,week=parseInt(document.getElementById('ap-week').value);
+  const a=CONFIG.agents[selA],d=getData(selA,week);
+  btn.disabled=true;btn.innerHTML='<span class="sp"><span></span><span></span><span></span></span> IA…';
+  prev.style.display='block';prev.textContent='⏳ Génération…';
+  const prompt=`Tu es Badr, Senior Team Manager Credit+ Maroc. Plan action opérationnel en français.
+Agent: ${a.name} | S${week} | ${monthOf(week)}
+Problèmes: ${issue||'maintien performance'}
+Notes: ${note||d.coaching||'aucune'}
+Qualité email: ${d.qualEmail||'N/A'}% | Qualité tél: ${d.qualPhone||'N/A'}% | AHT: ${d.aht||'N/A'}min
+${fd?'Date suivi: '+fd:''}
+3-4 actions: Problème ciblé / Action concrète / Responsable / Délai / Critère succès
+Adapte au problème. Termine par encouragement pour ${a.name.split(' ')[0]}.`;
+  callAI(prompt,
+    txt=>{pendingAPText=txt;prev.textContent=txt;savrow.style.display='block';btn.disabled=false;btn.innerHTML='🤖 Générer plan IA';},
+    err=>{prev.textContent='Erreur: '+err;btn.disabled=false;btn.innerHTML='🤖 Générer plan IA';}
+  );
+}
+function saveAP(){
+  const id='ap_'+Date.now();
+  apStore[id]={id,ai:selA,week:parseInt(document.getElementById('ap-week').value),
+    issues:document.getElementById('ap-issue').value.trim(),status:document.getElementById('ap-status').value,
+    fd:document.getElementById('ap-follow').value,note:document.getElementById('ap-note').value.trim(),planText:pendingAPText};
+  pendingAPText='';saveDashboardState();swTab('action',true);
+}
+function genAPExist(idx){
+  const p=Object.values(apStore).filter(x=>x.ai===selA)[idx];if(!p)return;
+  const a=CONFIG.agents[selA],d=getData(selA,p.week);
+  const prompt=`Credit+ Maroc. Plan action en français.\nAgent: ${a.name} | S${p.week}\nProblèmes: ${p.issues||'maintien'}\nQ.email: ${d.qualEmail||'N/A'}% | Q.tél: ${d.qualPhone||'N/A'}% | AHT: ${d.aht||'N/A'}min\n3-4 actions: Problème/Action/Responsable/Délai/Critère`;
+  callAI(prompt,txt=>{const keys=Object.keys(apStore).filter(k=>apStore[k].ai===selA);apStore[keys[idx]].planText=txt;swTab('action',true);},err=>alert('Erreur: '+err));
+}
+function updAPSt(idx,val){const keys=Object.keys(apStore).filter(k=>apStore[k].ai===selA);if(apStore[keys[idx]])apStore[keys[idx]].status=val;saveDashboardState();renderSidebar();}
+function delAP(idx){const keys=Object.keys(apStore).filter(k=>apStore[k].ai===selA);if(confirm('Supprimer ?'))delete apStore[keys[idx]];saveDashboardState();swTab('action',true);}
+function copyAP(idx){const p=Object.values(apStore).filter(x=>x.ai===selA)[idx];if(p&&p.planText)navigator.clipboard.writeText(p.planText).then(()=>alert('Copié ✓'));}
+
+// ── LIVE UPDATE ──────────────────────────────────────────
+function liveUpd(){
+  if(selA===null)return;saveInputs(selA,getWeek());
+  const d=getData(selA,getWeek()),lv=perf(d);
+  CONFIG.kpis.filter(k=>!k.vol&&k.id!=='totalHrs').forEach(kp=>{
+    const vc=document.getElementById('kv-'+kp.id),kc=document.getElementById('kc-'+kp.id);
+    if(vc)vc.innerHTML=`${d[kp.id]||'—'}<small>${d[kp.id]?kp.unit:''}</small>`;
+    if(kc)kc.className='kc '+kst(d[kp.id],kp);
+  });
+  const kh=document.getElementById('kc-totalHrs'),vh=document.getElementById('kv-totalHrs');
+  if(kh)kh.className='kc neu';if(vh)vh.innerHTML=`${d.totalHrs||'—'}<small>${d.totalHrs?' h':''}</small>`;
+  const pb=document.getElementById('pbdg');if(pb){pb.className='pbdg '+bCls(lv);pb.textContent=bLbl(lv);}
+  renderSidebar();
+}
+
+// ── CHARTS ───────────────────────────────────────────────
+function destroyCharts(){charts.forEach(c=>c.destroy());charts=[];}
+function drawCharts(){
+  const ws=CONFIG.weeks,labels=ws.map(w=>'S'+w.num);
+  const qeD=ws.map(w=>{const d=getData(selA,w.num);return d.qualEmail!==''?parseFloat(d.qualEmail):null;});
+  const qpD=ws.map(w=>{const d=getData(selA,w.num);return d.qualPhone!==''?parseFloat(d.qualPhone):null;});
+  const ahtD=ws.map(w=>{const d=getData(selA,w.num);return d.aht!==''?parseFloat(d.aht):null;});
+  const volKPIs=CONFIG.kpis.filter(k=>k.vol);
+  const volD=ws.map(w=>{const d=getData(selA,w.num);return volKPIs.reduce((s,kp)=>s+(parseInt(d[kp.id])||0),0)||null;});
+  const base={responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:9.5},boxWidth:11}}},scales:{x:{grid:{color:'#EEEBE4'},ticks:{font:{size:9.5},color:'#928E82'}},y:{grid:{color:'#EEEBE4'},ticks:{font:{size:9.5},color:'#928E82'}}}};
+  charts.push(
+    new Chart(document.getElementById('ch-qual'),{type:'line',data:{labels,datasets:[
+      {label:'Email %',data:qeD,borderColor:'#1A5435',backgroundColor:'rgba(26,84,53,.08)',tension:.35,borderWidth:2,fill:true,spanGaps:true,pointRadius:3},
+      {label:'Téléphone %',data:qpD,borderColor:'#1A3878',backgroundColor:'rgba(26,56,120,.06)',tension:.35,borderWidth:2,fill:false,spanGaps:true,pointRadius:3,borderDash:[4,3]}
+    ]},options:{...base,scales:{...base.scales,y:{...base.scales.y,suggestedMin:60,suggestedMax:100,ticks:{...base.scales.y.ticks,callback:v=>v+'%'}}}}}),
+    new Chart(document.getElementById('ch-vol'),{type:'bar',data:{labels,datasets:[
+      {label:'Contacts',data:volD,backgroundColor:'rgba(26,84,53,.5)',borderRadius:3,yAxisID:'y'},
+      {label:'AHT (min)',data:ahtD,type:'line',borderColor:'#7B4500',tension:.35,borderWidth:2,spanGaps:true,pointRadius:3,yAxisID:'y1'}
+    ]},options:{...base,scales:{x:base.scales.x,y:{...base.scales.y,position:'left'},y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>v+'m',font:{size:9.5},color:'#928E82'}}}}})
+  );
+}
+
+// ── EMAIL GEN ────────────────────────────────────────────
+function genEmail(){
+  if(selA===null)return;saveInputs(selA,getWeek());
+  const a=CONFIG.agents[selA],w=getWeek(),d=getData(selA,w),lv=perf(d);
+  const btn=document.getElementById('gen-btn'),body=document.getElementById('ebody');
+  btn.disabled=true;btn.innerHTML='<span class="sp"><span></span><span></span><span></span></span>';body.textContent='⏳ Génération en cours…';
+  const coach=getCoach(selA,w);
+  const prenom=a.name.split(' ')[0];
+  const issues=(d.issues||'').split(',').map(x=>x.trim()).filter(Boolean);
+  const hasQE=d.qualEmail&&d.qualEmail!=='';
+  const hasQP=d.qualPhone&&d.qualPhone!=='';
+  const hasAHT=d.aht&&d.aht!=='';
+  const hasProd=d.productivity&&d.productivity!=='';
+  const qeOk=hasQE&&parseFloat(d.qualEmail)>=90;
+  const qpOk=hasQP&&parseFloat(d.qualPhone)>=90;
+  const ahtOk=hasAHT&&parseFloat(d.aht)<=7;
+  const prodOk=hasProd&&parseFloat(d.productivity)>=7;
+  const perfGlobal=lv==='top'?'EXCELLENT — dépasse les attentes cette semaine':lv==='avg'?'MOYEN — dans la norme avec des axes d\'amélioration identifiés':'INSUFFISANT — nécessite une intervention managériale immédiate';
+  const toneGuide=lv==='top'
+    ?`TON : Chaleureux, valorisant et motivant. Tu reconnais la performance avec des mots précis et sincères — pas de formules génériques. Tu félicites les résultats spécifiques, tu projettes vers la semaine suivante avec enthousiasme. L'agent doit ressentir que son travail est vu et apprécié.`
+    :lv==='avg'
+    ?`TON : Constructif, bienveillant et honnête. Tu commences par les points positifs avant d'aborder les axes d'amélioration. Tu utilises "nous" pour partager la responsabilité. Tu proposes des pistes concrètes et réalisables. L'agent doit repartir motivé, pas découragé.`
+    :`TON : Direct, professionnel et ferme mais bienveillant. Tu nommes les problèmes clairement sans brutalité. Tu proposes un plan d'action précis avec des étapes courtes (cette semaine). Tu rappelles ta confiance dans les capacités de l'agent. L'agent doit comprendre l'urgence sans se sentir abandonné.`;
+
+  const kpiBlock=[];
+  if(d.emailsHandled) kpiBlock.push('• Emails traités : '+d.emailsHandled);
+  if(d.calls) kpiBlock.push('• Appels traités : '+d.calls);
+  if(d.chats) kpiBlock.push('• Chats traités : '+d.chats);
+  if(d.jira) kpiBlock.push('• Tickets Jira : '+d.jira);
+  if(hasProd) kpiBlock.push('• Productivité : '+d.productivity+' (cible : 7) → '+(prodOk?'ATTEINTE':'NON ATTEINTE'));
+  if(hasQE) kpiBlock.push('• Qualité Email : '+d.qualEmail+'% (cible : ≥90%) → '+(qeOk?'CONFORME':'SOUS LA CIBLE ⚠'));
+  if(hasQP) kpiBlock.push('• Qualité Téléphone : '+d.qualPhone+'% (cible : ≥90%) → '+(qpOk?'CONFORME':'SOUS LA CIBLE ⚠'));
+  if(hasAHT) kpiBlock.push('• AHT : '+d.aht+' min (cible : ≤7 min) → '+(ahtOk?'CONFORME':'AU-DESSUS DE LA CIBLE ⚠'));
+  kpiBlock.push('• Total Hours Worked : '+(d.totalHrs||'N/A')+' h');
+  if(issues.length) kpiBlock.push('• Problèmes qualité (QA) : '+issues.join(', '));
+  if(d.coaching) kpiBlock.push('• Notes coaching : '+d.coaching);
+
+  const prompt=`Rédige un email 1:1 COMPLET en français, prêt à envoyer, signé par Badr, Senior Team Manager Credit+ Maroc.
+
+IMPORTANT : l'email doit être terminé. Ne coupe jamais au milieu d'une phrase. Longueur cible : 350 à 550 mots maximum.
+
+Agent : ${a.name} (${a.role})
+Semaine : S${w} - ${monthOf(w)}
+Niveau global : ${perfGlobal}
+
+Données réelles à utiliser, sans inventer de chiffres :
+${kpiBlock.join('\n')}
+
+Ton attendu : ${lv==='top'?'valorisant, précis et motivant':lv==='avg'?'constructif, bienveillant et orienté progression':'ferme, clair, bienveillant et très actionnable'}.
+
+Structure obligatoire :
+Objet : [objet court et personnalisé]
+Bonjour ${prenom},
+
+1) Accroche personnalisée basée sur la semaine.
+2) Analyse claire des KPIs avec les chiffres exacts disponibles.
+3) Points de coaching concrets, maximum 3.
+4) Objectif prioritaire pour la semaine suivante.
+5) Conclusion motivante.
+
+Cordialement,
+Badr
+Team Manager | Customer Service
+Credit+ Maroc
+
+Règles : commence directement par "Objet :". N'utilise aucun placeholder. Si une donnée manque, ne la mentionne pas. L'email doit être complet et final.`;
+
+  callAI(prompt,
+    txt=>{lastEmail=txt;body.textContent=txt;btn.disabled=false;btn.innerHTML='Générer';},
+    err=>{body.textContent='❌ Erreur: '+err;btn.disabled=false;btn.innerHTML='Générer';}
+  );
+}
+
+function copyEmail(){const b=document.getElementById('ebody');if(!b||b.textContent.startsWith('Clique'))return;navigator.clipboard.writeText(b.textContent).then(()=>{const btn=document.querySelector('.ebtns .btn');if(!btn)return;const o=btn.textContent;btn.textContent='✓ Copié!';setTimeout(()=>btn.textContent=o,2000);});}
+
+// ══════════════════════════════════════════════════════════
+// ── MONTHLY ───────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+function renderMonthly(){
+  const a=CONFIG.agents[selA];
+  const mw=CONFIG.weeks.filter(w=>w.month===activeMth).map(w=>w.num);
+  let tQe=0,cQe=0,tQp=0,cQp=0,tA=0,cA=0,tH=0,cH=0;
+  mw.forEach(w=>{const d=getData(selA,w);
+    if(d.qualEmail!==''){tQe+=parseFloat(d.qualEmail);cQe++;}if(d.qualPhone!==''){tQp+=parseFloat(d.qualPhone);cQp++;}
+    if(d.aht!==''){tA+=parseFloat(d.aht);cA++;}if(d.totalHrs!==''){tH+=parseFloat(d.totalHrs);cH++;}
+  });
+  const avgQe=cQe?(tQe/cQe).toFixed(1):'—',avgQp=cQp?(tQp/cQp).toFixed(1):'—',avgA=cA?(tA/cA).toFixed(1):'—',sumH=cH?tH.toFixed(1):'—';
+  const coachCnt=mw.filter(w=>getCoach(selA,w).checked).length;
+  const agAPs=Object.values(apStore).filter(p=>p.ai===selA&&mw.includes(p.week));
+  const coachEmails=mw.filter(w=>{const c=getCoach(selA,w);return c.checked&&c.fileName&&c.fileData;}).map(w=>({w,...getCoach(selA,w)}));
+
+  const rows=mw.map(w=>{
+    const d=getData(selA,w),lv=perf(d),coach=getCoach(selA,w);
+    const cls=lv==='top'?'b-top':lv==='avg'?'b-avg':lv==='low'?'b-low':'b-n';
+    const lbl=lv==='top'?'Top':lv==='avg'?'Moyen':lv==='low'?'À améliorer':'—';
+    return`<tr><td style="font-weight:500">S${w}</td><td>${d.qualEmail||'—'}${d.qualEmail?'%':''}</td><td>${d.qualPhone||'—'}${d.qualPhone?'%':''}</td><td>${d.aht||'—'}${d.aht?' min':''}</td><td>${d.emailsHandled||'—'}</td><td>${d.calls||'—'}</td><td>${d.totalHrs||'—'}${d.totalHrs?' h':''}</td><td style="font-size:10px;color:var(--rust)">${d.issues||'—'}</td><td><span class="cpill ${cls}">${lbl}</span></td>
+    <td>${coach.checked?`<span style="color:var(--pine);font-size:10.5px;font-weight:500">✓ ${coach.date||''}</span>`:'<span style="color:var(--ink3)">—</span>'}
+      ${coach.fileName&&coach.fileData?` <button class="btn sm" onclick="openFV('${coach.fileName}',coachStore['${key(selA,w)}'].fileData,coachStore['${key(selA,w)}'].fileType)">📄 Voir</button> <button class="btn sm" onclick="deleteCoachFile(${selA},${w})">🗑️ Email</button>`:''}
+      ${coach.checked?` <button class="btn sm" onclick="clearCoachSubmission(${selA},${w})">✕ 1:1</button>`:''}
+      ${(coach.checked||coach.fileName)?` <button class="btn sm" onclick="clearCoachAll(${selA},${w})">Tout supprimer</button>`:''}
+    </td></tr>`;
+  }).join('');
+
+  document.getElementById('main').innerHTML=`<div class="fade">
+    <div class="chtop"><div class="atit"><div class="avlg" style="background:${a.bg};color:${a.tc}">${a.ini}</div><div><div class="anm">${a.name}</div><div class="amt">${a.role} · Vue Mensuelle</div></div></div></div>
+    <div class="mtabs">${allMonths().map(m=>`<button class="mtab ${m===activeMth?'on':''}" onclick="setMth('${m}')">${m}</button>`).join('')}</div>
+    <div class="mstats">
+      <div class="msc"><div class="msl">Q. Email Moy.</div><div class="msv">${avgQe}${cQe?'%':''}</div><div class="mss">Cible ≥ 90%</div></div>
+      <div class="msc"><div class="msl">Q. Tél. Moy.</div><div class="msv">${avgQp}${cQp?'%':''}</div><div class="mss">Cible ≥ 90%</div></div>
+      <div class="msc"><div class="msl">AHT Moyen</div><div class="msv">${avgA}${cA?' min':''}</div><div class="mss">Cible ≤ 7 min</div></div>
+      <div class="msc"><div class="msl">Total Hours Worked</div><div class="msv">${sumH}${cH?'<span style="font-size:12px;color:var(--ink3)"> h</span>':''}</div><div class="mss">Somme mensuelle</div></div>
+    </div>
+    <div class="two" style="margin-bottom:10px">
+      <div class="card" style="overflow-x:auto">
+        <div class="ct">Détail — ${activeMth} <span style="display:flex;gap:4px;flex-wrap:wrap">
+          ${coachCnt?`<span style="background:var(--pine-l);color:var(--pine);border-radius:8px;padding:1px 5px;font-size:9px">✓ ${coachCnt} 1:1</span>`:''}
+        </span></div>
+        <table class="mt">
+          <thead><tr><th>Sem.</th><th>Q.Email</th><th>Q.Tél</th><th>AHT</th><th>Emails</th><th>Appels</th><th>Total Hrs</th><th>Problèmes</th><th>Niveau</th><th>1:1</th></tr></thead>
+          <tbody>${rows||'<tr><td colspan="10" style="color:var(--ink3);text-align:center;padding:12px">Aucune donnée</td></tr>'}</tbody>
+        </table>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:9px"><div class="ct">Qualité — ${activeMth}</div><div style="height:155px"><canvas id="ch-m"></canvas></div></div>
+        ${coachEmails.length?`<div class="card"><div class="ct">Emails 1:1 — ${activeMth}</div>
+          <div class="email-list">${coachEmails.map(c=>`<div class="email-item" onclick="openFV('${c.fileName}',coachStore['${key(selA,c.w)}'].fileData,coachStore['${key(selA,c.w)}'].fileType)">
+            <span class="ew">S${c.w}</span><span class="ed">${c.date||''}</span><span class="en">📄 ${c.fileName}</span><span class="et ${ftCls(c.fileName)}">${ftLbl(c.fileName)}</span>
+          </div>`).join('')}</div></div>`:''}
+      </div>
+    </div>
+    ${agAPs.length?`<div class="card"><div class="ct">Plans d'Action — ${activeMth}</div><div class="ap-list">
+      ${agAPs.map(p=>`<div class="api ${iCls(p.status)}"><div class="api-hd"><div><div class="api-ttl">${p.issues||'Plan'} <span style="font-size:10px;color:var(--ink3)">S${p.week}</span></div>${p.fd?`<span class="fdate ${fdCls(p.fd)}">${fdLbl(p.fd)}</span>`:''}</div><span class="stpill ${stCls(p.status)}">${stLbl(p.status)}</span></div>${p.planText?`<div class="aplan-txt">${p.planText}</div>`:''}</div>`).join('')}
+    </div></div>`:''}</div>`;
+
+  const mLabels=mw.map(w=>'S'+w);
+  const mqe=mw.map(w=>{const d=getData(selA,w);return d.qualEmail!==''?parseFloat(d.qualEmail):null;});
+  const mqp=mw.map(w=>{const d=getData(selA,w);return d.qualPhone!==''?parseFloat(d.qualPhone):null;});
+  charts.push(new Chart(document.getElementById('ch-m'),{type:'line',data:{labels:mLabels,datasets:[
+    {label:'Email %',data:mqe,borderColor:'#1A5435',backgroundColor:'rgba(26,84,53,.09)',tension:.35,borderWidth:2,fill:true,spanGaps:true,pointRadius:4},
+    {label:'Tél. %',data:mqp,borderColor:'#1A3878',backgroundColor:'rgba(26,56,120,.06)',tension:.35,borderWidth:2,fill:false,spanGaps:true,pointRadius:4,borderDash:[4,3]}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:9.5},boxWidth:11}}},
+    scales:{x:{grid:{color:'#EEEBE4'},ticks:{font:{size:9.5},color:'#928E82'}},y:{grid:{color:'#EEEBE4'},suggestedMin:60,suggestedMax:100,ticks:{callback:v=>v+'%',font:{size:9.5},color:'#928E82'}}}}}));
+}
+function setMth(m){activeMth=m;destroyCharts();renderMonthly();}
+
+// ══════════════════════════════════════════════════════════
+// ── TEAM VIEW ─────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+function renderTeam(){
+  destroyCharts();const w=getWeek();
+  let totalAPs=Object.values(apStore).length,ongoingAPs=0,doneAPs=0,total1=0,totalEmails=0;
+  Object.values(apStore).forEach(p=>{if(p.status&&p.status.includes('cours'))ongoingAPs++;if(p.status&&(p.status.includes('Compl')||p.status.includes('compl')))doneAPs++;});
+  const allFiles=[];
+  CONFIG.agents.forEach((a,i)=>CONFIG.weeks.forEach(wk=>{const c=getCoach(i,wk.num);if(c.checked){total1++;if(c.fileName&&c.fileData){totalEmails++;allFiles.push({ai:i,aName:a.name,week:wk.num,month:wk.month,...c});}}}));
+
+  document.getElementById('main').innerHTML=`<div class="fade">
+    <div class="chtop"><div class="atit">
+      <div style="width:40px;height:40px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;font-size:19px">🏆</div>
+      <div><div class="anm">Team Performance</div><div class="amt">Vue globale · S${w} · ${monthOf(w)}</div></div>
+    </div></div>
+    <div class="tp-grid">
+      <div class="tp-kc"><div class="tp-val" style="color:var(--ocean)">${totalAPs}</div><div class="tp-lbl">Plans d'action</div></div>
+      <div class="tp-kc"><div class="tp-val" style="color:#3b82f6">${ongoingAPs}</div><div class="tp-lbl">En cours</div></div>
+      <div class="tp-kc"><div class="tp-val" style="color:var(--pine)">${total1}</div><div class="tp-lbl">1:1 réalisés</div></div>
+      <div class="tp-kc"><div class="tp-val" style="color:var(--gold)">${totalEmails}</div><div class="tp-lbl">Emails attachés</div></div>
+    </div>
+    ${CONFIG.agents.map((a,i)=>{
+      const d=getData(i,w),lv=perf(d);
+      const agAPs=Object.values(apStore).filter(p=>p.ai===i);
+      const agOn=agAPs.filter(p=>p.status&&p.status.includes('cours')).length;
+      const agDone=agAPs.filter(p=>p.status&&(p.status.includes('Compl')||p.status.includes('compl'))).length;
+      const agCoach=CONFIG.weeks.filter(wk=>getCoach(i,wk.num).checked).length;
+      const agFiles=allFiles.filter(f=>f.ai===i);
+      return`<div class="ac">
+        <div class="ac-hdr" onclick="document.getElementById('ac-${i}').classList.toggle('open')">
+          <div class="ava" style="background:${a.bg};color:${a.tc};width:32px;height:32px;font-size:11px">${a.ini}</div>
+          <div style="flex:1"><div style="font-size:12.5px;font-weight:600">${a.name}</div><div style="font-size:10px;color:var(--ink3)">${a.role}</div></div>
+          <span class="pbdg ${bCls(lv)}" style="flex-shrink:0">${bLbl(lv)}</span>
+          <div style="display:flex;gap:6px;margin-left:9px;flex-shrink:0;flex-wrap:wrap">
+            ${agOn?`<span class="stpill st-prog" style="font-size:9.5px">${agOn} PA</span>`:''}
+            ${agDone?`<span class="stpill st-done" style="font-size:9.5px">${agDone}✓</span>`:''}
+            ${agCoach?`<span style="background:var(--pine-l);color:var(--pine);border-radius:8px;padding:2px 7px;font-size:9.5px">✓${agCoach} 1:1</span>`:''}
+            <span style="font-size:11px;color:var(--ink3)">▾</span>
+          </div>
+        </div>
+        <div class="ac-body" id="ac-${i}">
+          <div class="ac-stats">
+            <div class="acs"><div class="acs-v">${d.qualEmail||'—'}${d.qualEmail?'%':''}</div><div class="acs-l">Q.Email</div></div>
+            <div class="acs"><div class="acs-v">${d.qualPhone||'—'}${d.qualPhone?'%':''}</div><div class="acs-l">Q.Tél</div></div>
+            <div class="acs"><div class="acs-v">${d.aht||'—'}${d.aht?' m':''}</div><div class="acs-l">AHT</div></div>
+            <div class="acs"><div class="acs-v">${d.totalHrs||'—'}${d.totalHrs?' h':''}</div><div class="acs-l">Total Hours Worked</div></div>
+            <div class="acs"><div class="acs-v">${d.productivity||'—'}</div><div class="acs-l">Prod.</div></div>
+          </div>
+          ${agAPs.length?`<div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:6px">Plans d'action (${agAPs.length})</div>
+          <div class="ap-list" style="margin-bottom:11px">
+            ${agAPs.slice(0,3).map(p=>`<div class="api ${iCls(p.status)}" style="padding:8px 10px">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                <div style="font-size:11.5px;font-weight:600">${p.issues||'Plan général'} <span style="font-weight:400;font-size:9.5px;color:var(--ink3)">S${p.week}</span>${p.fd?` <span class="fdate ${fdCls(p.fd)}" style="display:inline-flex;margin-left:3px">${fdLbl(p.fd)}</span>`:''}</div>
+                <span class="stpill ${stCls(p.status)}" style="font-size:9.5px">${stLbl(p.status)}</span>
+              </div>
+            </div>`).join('')}
+            ${agAPs.length>3?`<button class="btn sm" onclick="selA=${i};curPage='agent';activeTab='action';renderSidebar();renderContent()" style="width:100%;justify-content:center;margin-top:5px">Voir tous (${agAPs.length}) →</button>`:''}
+          </div>`:''}
+          <div style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:6px">Emails 1:1 ${agFiles.length?`(${agFiles.length})`:'— aucun'}</div>
+          ${agFiles.length?`<div class="email-list">${agFiles.map(f=>`<div class="email-item" onclick="openFV('${f.fileName}',coachStore['${key(f.ai,f.week)}'].fileData,coachStore['${key(f.ai,f.week)}'].fileType)">
+            <span class="ew">S${f.week}</span><span class="ed">${f.date||f.month}</span><span class="en">📄 ${f.fileName}</span><span class="et ${ftCls(f.fileName)}">${ftLbl(f.fileName)}</span>
+          </div>`).join('')}</div>`:`<div style="font-size:11px;color:var(--ink3);padding:8px">Aucun email attaché · Va dans la vue hebdo pour attacher</div>`}
+          <button class="btn sm" style="margin-top:9px" onclick="selA=${i};curPage='agent';activeTab='kpis';renderSidebar();renderContent()">→ Profil complet</button>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+
+// ══════════════════════════════════════════════════════════
+// ── PIP VIEW ──────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+function pipKey(){return 'pip_'+Date.now()+'_'+Math.floor(Math.random()*9999);}
+function addPIP(){
+  const agent=document.getElementById('pip-agent').value;
+  if(agent==='')return alert('Sélectionne un agent');
+  const id=pipKey();
+  pipStore[id]={id,ai:parseInt(agent),start:document.getElementById('pip-start').value||'',due:document.getElementById('pip-due').value||'',status:'En cours',objective:document.getElementById('pip-objective').value||'',fileName:'',fileData:null,fileType:'',closureDate:'',closureFileName:'',closureFileData:null,closureFileType:'',closureNote:''};
+  renderPIPs();
+}
+function updatePIP(id,field,val){if(!pipStore[id])return;pipStore[id][field]=val;renderPIPs();}
+function deletePIP(id){if(confirm('Supprimer ce PIP ?')){delete pipStore[id];renderPIPs();}}
+function handlePIPFile(input,id,kind){
+  if(!input.files||!input.files[0]||!pipStore[id])return;
+  const f=input.files[0],reader=new FileReader();
+  reader.onload=e=>{
+    if(kind==='closure'){pipStore[id].closureFileName=f.name;pipStore[id].closureFileData=e.target.result;pipStore[id].closureFileType=f.type||'text/plain';}
+    else{pipStore[id].fileName=f.name;pipStore[id].fileData=e.target.result;pipStore[id].fileType=f.type||'text/plain';}
+    renderPIPs();
+  };
+  reader.readAsDataURL(f);
+}
+function renderPIPs(){
+  destroyCharts();
+  const w=getWeek(),m=monthOf(w);
+  const items=Object.values(pipStore).filter(p=>view==='monthly'?(!activeMth||monthOf(getWeek())===activeMth||true):true);
+  const active=items.filter(p=>p.status==='En cours').length;
+  const closed=items.filter(p=>p.status==='Clôturé').length;
+  document.getElementById('main').innerHTML=`<div class="fade">
+    <div class="chtop"><div class="atit">
+      <div style="width:40px;height:40px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;font-size:19px;color:#fff">🧾</div>
+      <div><div class="anm">PIPs Conducted</div><div class="amt">Suivi PIP · ${view==='weekly'?'S'+w+' · '+m:'vue mensuelle'} · pièces jointes et clôture</div></div>
+    </div></div>
+    <div class="tp-grid">
+      <div class="tp-kc"><div class="tp-val" style="color:var(--ocean)">${items.length}</div><div class="tp-lbl">PIPs total</div></div>
+      <div class="tp-kc"><div class="tp-val" style="color:#3b82f6">${active}</div><div class="tp-lbl">En cours</div></div>
+      <div class="tp-kc"><div class="tp-val" style="color:var(--pine)">${closed}</div><div class="tp-lbl">Clôturés</div></div>
+      <div class="tp-kc"><div class="tp-val" style="color:var(--gold)">${items.filter(p=>p.fileName||p.closureFileName).length}</div><div class="tp-lbl">Avec fichiers</div></div>
+    </div>
+    <div class="ap-new">
+      <div class="ap-new-ttl">➕ Ajouter un PIP</div>
+      <div class="ap-g3">
+        <div class="fr"><div class="fl">Agent</div><select class="fi" id="pip-agent"><option value="">Sélectionner…</option>${CONFIG.agents.map((a,i)=>`<option value="${i}">${a.name}</option>`).join('')}</select></div>
+        <div class="fr"><div class="fl">Date PIP</div><input class="fi" type="date" id="pip-start"/></div>
+        <div class="fr"><div class="fl">Date cible / review</div><input class="fi" type="date" id="pip-due"/></div>
+      </div>
+      <div class="fr" style="margin-bottom:8px"><div class="fl">Objectif / résumé PIP</div><textarea class="fta" id="pip-objective" rows="3" placeholder="Objectif, KPI concerné, actions attendues…"></textarea></div>
+      <button class="btn pr" onclick="addPIP()">Créer PIP</button>
+    </div>
+    <div class="ap-list">
+      ${items.length?items.map(p=>{
+        const a=CONFIG.agents[p.ai]||{name:'Agent'};
+        return `<div class="api ${p.status==='Clôturé'?'s-done':'s-prog'}">
+          <div class="api-hd">
+            <div><div class="api-ttl">${a.name} <span style="font-weight:400;font-size:10px;color:var(--ink3)">· PIP du ${p.start||'—'}</span></div>
+              <div class="api-sub">Review cible : ${p.due||'—'}</div></div>
+            <span class="stpill ${p.status==='Clôturé'?'st-done':'st-prog'}">${p.status}</span>
+          </div>
+          <div class="aplan-txt">${p.objective||'Aucun résumé renseigné.'}</div>
+          <div class="two" style="margin-top:9px;margin-bottom:0">
+            <div class="card" style="padding:10px">
+              <div class="ct">📎 PIP attaché <span>document initial</span></div>
+              ${p.fileName&&p.fileData?`<div class="att-file" onclick="openFV('${p.fileName}',pipStore['${p.id}'].fileData,pipStore['${p.id}'].fileType)">📄 <span class="att-fn">${p.fileName}</span> <span class="${ftCls(p.fileName)}">${ftLbl(p.fileName)}</span></div>`:`<div style="font-size:11px;color:var(--ink3);margin-bottom:7px">Aucun document attaché</div>`}
+              <label class="att-btn" style="margin-top:7px">📎 Attacher / remplacer<input type="file" style="display:none" accept=".pdf,.eml,.msg,.txt,.html,.png,.jpg,.doc,.docx" onchange="handlePIPFile(this,'${p.id}','pip')"/></label>
+            </div>
+            <div class="card" style="padding:10px">
+              <div class="ct">✅ Clôture <span>date + preuve</span></div>
+              <div class="fg" style="grid-template-columns:1fr 1fr;margin-bottom:7px">
+                <div class="fr"><div class="fl">Statut</div><select class="fi" onchange="updatePIP('${p.id}','status',this.value)"><option ${p.status==='En cours'?'selected':''}>En cours</option><option ${p.status==='Clôturé'?'selected':''}>Clôturé</option></select></div>
+                <div class="fr"><div class="fl">Date clôture</div><input class="fi" type="date" value="${p.closureDate||''}" onchange="updatePIP('${p.id}','closureDate',this.value)"/></div>
+              </div>
+              ${p.closureFileName&&p.closureFileData?`<div class="att-file" onclick="openFV('${p.closureFileName}',pipStore['${p.id}'].closureFileData,pipStore['${p.id}'].closureFileType)">📄 <span class="att-fn">${p.closureFileName}</span> <span class="${ftCls(p.closureFileName)}">${ftLbl(p.closureFileName)}</span></div>`:`<div style="font-size:11px;color:var(--ink3);margin-bottom:7px">Aucune preuve de clôture</div>`}
+              <label class="att-btn" style="margin-top:7px">📎 Attacher clôture<input type="file" style="display:none" accept=".pdf,.eml,.msg,.txt,.html,.png,.jpg,.doc,.docx" onchange="handlePIPFile(this,'${p.id}','closure')"/></label>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn sm" onclick="deletePIP('${p.id}')">Supprimer</button></div>
+        </div>`;
+      }).join(''):`<div class="ap-empty">Aucun PIP ajouté pour le moment.</div>`}
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════
+// ── ADMIN PANEL ───────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+function renderAdmin(){
+  destroyCharts();
+  const colors=[['#dbeafe','#1e3a8a'],['#d1fae5','#064e3b'],['#fef9c3','#713f12'],['#ede9fe','#4c1d95'],['#fce7f3','#831843'],['#ffedd5','#7c2d12'],['#dcfce7','#14532d'],['#e0f2fe','#0c4a6e'],['#f3f4f6','#374151']];
+
+  document.getElementById('main').innerHTML=`<div class="fade">
+    <div class="page-title">Admin &amp; Configuration</div>
+    <div class="page-sub">Modifie agents, semaines/mois et KPIs. Les changements s'appliquent immédiatement et sont sauvegardés localement.</div>
+
+    <!-- AGENTS -->
+    <div class="admin-section">
+      <div class="admin-section-ttl"><span class="ico">👤</span> Agents</div>
+      <div id="agent-list">${CONFIG.agents.map((a,i)=>`
+        <div class="agent-chip">
+          <div class="ava" style="background:${a.bg};color:${a.tc};width:22px;height:22px;font-size:9px">${a.ini}</div>
+          <input value="${a.name}" onchange="CONFIG.agents[${i}].name=this.value;saveConfig();renderSidebar()" style="flex:1"/>
+          <select onchange="CONFIG.agents[${i}].type=this.value;saveConfig();renderSidebar()" style="border:none;background:none;font-family:'Sora',sans-serif;font-size:11px;color:var(--ink2);cursor:pointer;outline:none">
+            <option value="ep" ${a.type==='ep'?'selected':''}>Email/Phone</option>
+            <option value="sm" ${a.type==='sm'?'selected':''}>Social Media</option>
+          </select>
+          <input value="${a.role}" onchange="CONFIG.agents[${i}].role=this.value;saveConfig()" style="flex:1;font-size:10.5px;color:var(--ink2)"/>
+          <input value="${a.ini}" onchange="CONFIG.agents[${i}].ini=this.value;saveConfig()" style="width:36px;text-align:center;font-size:10.5px"/>
+          <button class="del-btn" onclick="if(confirm('Supprimer ${a.name} ?')){CONFIG.agents.splice(${i},1);saveConfig();renderAdmin();renderSidebar();}">✕</button>
+        </div>`).join('')}
+      </div>
+      <button class="btn" style="margin-top:8px" onclick="addAgent()">+ Ajouter un agent</button>
+    </div>
+
+    <!-- WEEKS / MONTHS -->
+    <div class="admin-section">
+      <div class="admin-section-ttl"><span class="ico">📅</span> Semaines &amp; Mois</div>
+      <div id="week-chips" style="margin-bottom:10px">${CONFIG.weeks.map((w,i)=>`
+        <span class="week-chip">S${w.num} — <input value="${w.month}" onchange="CONFIG.weeks[${i}].month=this.value;saveConfig();buildWeekSelect()" style="border:none;background:none;font-family:'Sora',sans-serif;font-size:11px;width:70px;outline:none"/>
+          <button onclick="if(confirm('Supprimer S${w.num} ?')){CONFIG.weeks.splice(${i},1);saveConfig();buildWeekSelect();renderAdmin();}">✕</button>
+        </span>`).join('')}
+      </div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center">
+        <input class="fi" id="new-week-num" type="number" placeholder="N° semaine" style="width:110px" min="1"/>
+        <input class="fi" id="new-week-month" placeholder="Mois (ex: Juin)" style="width:130px"/>
+        <button class="btn pr" onclick="addWeek()">+ Ajouter semaine</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="admin-section">
+      <div class="admin-section-ttl"><span class="ico">📊</span> KPIs &amp; Cibles</div>
+      ${CONFIG.kpis.map((kp,i)=>`
+      <div class="kpi-config">
+        <div><label>Nom du KPI</label><input class="fi" value="${kp.label}" onchange="CONFIG.kpis[${i}].label=this.value;saveConfig()"/></div>
+        <div><label>Unité</label><input class="fi" value="${kp.unit}" onchange="CONFIG.kpis[${i}].unit=this.value;saveConfig()" style="width:60px"/></div>
+        <div><label>Cible</label><input class="fi" type="number" value="${kp.target||''}" placeholder="—" onchange="CONFIG.kpis[${i}].target=this.value?parseFloat(this.value):null;saveConfig()" style="width:70px"/></div>
+        <div><label>Direction</label>
+          <select class="fi" onchange="CONFIG.kpis[${i}].dir=this.value;saveConfig()">
+            <option value="gte" ${kp.dir==='gte'?'selected':''}>≥ (plus haut)</option>
+            <option value="lte" ${kp.dir==='lte'?'selected':''}>≤ (plus bas)</option>
+          </select></div>
+        <button class="del-btn" onclick="if(confirm('Supprimer ce KPI ?')){CONFIG.kpis.splice(${i},1);saveConfig();renderAdmin();}">✕</button>
+      </div>`).join('')}
+      <button class="btn" style="margin-top:8px" onclick="addKPI()">+ Ajouter un KPI</button>
+      <div class="admin-note">⚠️ Modifie les noms des KPIs avec précaution — ils doivent correspondre exactement aux colonnes de ton Google Sheets (colonne <strong>Emails Handled</strong>, <strong>Calls</strong>, etc.). Après modification, recharge les données Sheets.</div>
+    </div>
+
+    <div style="display:flex;gap:7px">
+      <button class="btn pr" onclick="saveConfig();alert('Configuration sauvegardée ✓')">💾 Sauvegarder</button>
+      <button class="btn" onclick="if(confirm('Réinitialiser toute la config ?')){localStorage.removeItem('cp_config');location.reload();}">↺ Réinitialiser</button>
+    </div>
+  </div>`;
+}
+
+function addAgent(){
+  const colors=[['#f0fdf4','#166534'],['#fef2f2','#991b1b'],['#fffbeb','#92400e'],['#f5f3ff','#5b21b6'],['#ecfdf5','#064e3b']];
+  const [bg,tc]=colors[CONFIG.agents.length%colors.length];
+  const name=prompt('Nom de l\'agent :');if(!name)return;
+  const ini=name.split(' ').map(x=>x[0]).join('').toUpperCase().slice(0,3);
+  const role=prompt('Fonction :','Customer Support')||'Customer Support';
+  const type=confirm('Social Media ? (Annuler = Email/Phone)')?'sm':'ep';
+  CONFIG.agents.push({name,ini,role,type,bg,tc});saveConfig();renderAdmin();renderSidebar();
+}
+function addWeek(){
+  const num=parseInt(document.getElementById('new-week-num').value);
+  const month=document.getElementById('new-week-month').value.trim();
+  if(!num||!month){alert('Remplis le numéro et le mois');return;}
+  if(CONFIG.weeks.find(w=>w.num===num)){alert('Cette semaine existe déjà');return;}
+  CONFIG.weeks.push({num,month});CONFIG.weeks.sort((a,b)=>a.num-b.num);
+  saveConfig();buildWeekSelect();renderAdmin();
+}
+function addKPI(){
+  const label=prompt('Nom du KPI (doit correspondre à la colonne Sheets) :');if(!label)return;
+  const unit=prompt('Unité (ex: %, min, ou vide) :','')||'';
+  const target=prompt('Cible (nombre, ou vide si pas de cible) :');
+  const dir=confirm('Direction : "Plus haut = mieux" ? (Annuler = Plus bas = mieux)')?'gte':'lte';
+  CONFIG.kpis.push({id:label.toLowerCase().replace(/[^a-z0-9]/g,'_'),label,unit,target:target?parseFloat(target):null,dir,vol:false});
+  saveConfig();renderAdmin();
+}
+
+// ══════════════════════════════════════════════════════════
+// ── GUIDE PANEL ───────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+function renderGuide(){
+  destroyCharts();
+  document.getElementById('main').innerHTML=`<div class="fade">
+    <div class="page-title">Guide — Mise à Jour sans Code</div>
+    <div class="page-sub">Comment modifier le dashboard après publication sur GitHub, sans reprompting, sans développeur.</div>
+
+    <div class="guide-card">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <span class="guide-badge gb-github">GitHub Pages</span>
+        <span class="guide-badge gb-free">100% Gratuit</span>
+        <span class="guide-badge gb-warn">⚠️ Données en mémoire — se réinitialisent au rechargement</span>
+      </div>
+
+      <div class="guide-step">
+        <div class="gnum">1</div>
+        <div>
+          <div class="g-ttl">Accéder à ton fichier sur GitHub</div>
+          <div class="g-ds">Va sur <strong>github.com → Dash-1 → index.html</strong></div>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="gnum">2</div>
+        <div>
+          <div class="g-ttl">Modifier le fichier directement sur GitHub</div>
+          <div class="g-ds">Clique l'icône <strong>crayon ✏️</strong> (Edit this file) en haut à droite du fichier → Ctrl+A → Colle le nouveau fichier HTML → <strong>Commit changes</strong> → Le site se met à jour en 1-2 minutes.</div>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="gnum">3</div>
+        <div>
+          <div class="g-ttl">Comment obtenir une nouvelle version du dashboard</div>
+          <div class="g-ds">Ouvre une nouvelle conversation avec ton assistant et dis simplement :<br><br>
+          <div class="code-bl">"Voici mon dashboard Credit+ actuel : [colle le contenu HTML depuis GitHub]. 
+J'ai besoin d'ajouter [ta demande]. 
+Mon URL GitHub Pages : https://badremoutaaziz-del.github.io/Dash-1/"</div>
+          Ton assistant te donnera un nouveau fichier HTML complet à copier-coller directement dans GitHub.</div>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="gnum">4</div>
+        <div>
+          <div class="g-ttl">Récupérer le contenu HTML actuel depuis GitHub</div>
+          <div class="g-ds">GitHub → Dash-1 → index.html → clique <strong>Raw</strong> → Ctrl+A → Copie tout. C'est le contenu que tu colles à ton assistant.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="guide-card">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">⚙️ Ce que tu peux modifier SANS reprompting</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--pine);margin-bottom:6px">✅ Via le panneau Admin (ici même)</div>
+          <ul style="font-size:11.5px;color:var(--ink2);line-height:2;padding-left:16px">
+            <li>Ajouter / supprimer / renommer des agents</li>
+            <li>Changer le type (Email/Phone vs SM)</li>
+            <li>Ajouter des semaines et des mois</li>
+            <li>Modifier les cibles des KPIs</li>
+            <li>Ajouter de nouveaux KPIs</li>
+          </ul>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--ocean);margin-bottom:6px">🔄 Via Google Sheets (automatique)</div>
+          <ul style="font-size:11.5px;color:var(--ink2);line-height:2;padding-left:16px">
+            <li>Données KPIs hebdomadaires</li>
+            <li>Problèmes qualité identifiés</li>
+            <li>Notes coaching</li>
+            <li>Statut des plans d'action</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="guide-card">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">📤 Partager avec ton équipe</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:var(--pine-l);border-radius:8px;padding:12px">
+          <div style="font-size:12px;font-weight:600;color:var(--pine);margin-bottom:6px">Lien direct (lecture)</div>
+          <div style="font-size:11.5px;color:var(--pine);line-height:1.7">Partage simplement l'URL GitHub Pages. Tout le monde peut voir toutes les données. Pas de connexion requise.</div>
+          <div class="code-bl" style="margin-top:8px;font-size:10.5px">https://badremoutaaziz-del.github.io/Dash-1/</div>
+        </div>
+        <div style="background:var(--gold-l);border-radius:8px;padding:12px">
+          <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:6px">⚠️ Important à savoir</div>
+          <ul style="font-size:11.5px;color:var(--gold);line-height:1.8;padding-left:14px">
+            <li>Les données saisies manuellement (1:1, fichiers attachés, plans d'action) sont en mémoire locale — elles ne persistent pas entre sessions</li>
+            <li>Les données Sheets se rechargent à chaque visite</li>
+            <li>Pour persister les données : utilise Google Sheets comme source unique de vérité</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="guide-card">
+      <div style="font-size:13px;font-weight:600;margin-bottom:10px">🔑 Clé API Anthropic — FAQ</div>
+      <div style="font-size:11.5px;color:var(--ink2);line-height:1.9">
+        <strong>Où est stockée la clé ?</strong> Dans ton Apps Script Google — pas dans le dashboard. Elle n'est jamais visible par les agents.<br>
+        <strong>Coût ?</strong> Environ 0.01€ par email ou plan d'action généré. Selon ton quota Gemini, les générations passent par ta clé Google AI Studio.<br>
+        <strong>La clé expire ?</strong> Non — elle reste valide jusqu'à ce que tu la révokes sur Google AI Studio.<br>
+        <strong>Les agents peuvent-ils générer des emails ?</strong> Oui si tu partages le lien — ils verront le bouton "Générer" qui passe par ton Apps Script.
+      </div>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════
+// ── RELOAD ────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+function reloadData(silent){
+  if(!scriptUrl)return;if(!silent)setSS('spin','Actualisation…');
+  fetchJSONP(dataEndpoint(scriptUrl),(d,e)=>{
+    if(e||!d||d.status==='error'){setSS('err','Erreur sync');console.warn('Sync failed',e,d);return;}
+    const cnt=ingestPayload(d);setSS('ok','✓ Actualisé · '+cnt+' lignes');
+    renderSidebar();if(selA!==null&&curPage==='agent')renderContent();if(curPage==='team')renderTeam();if(curPage==='pip')renderPIPs();if(curPage==='planning')renderPlanning();
+  });
+}
+// ══════════════════════════════════════════════════════════
+// ── PLANNING ──────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+// ── PLANNING DATA (live — populated on sync) ──────────────
+let PLANNING_DATA = {};
+
+const DEPT_COLORS = {
+  'CS': {bg:'#CBE8D5',color:'#1A5435'},
+  'Social': {bg:'#CFD9F5',color:'#1A3878'},
+  'Tech': {bg:'#F5E6C8',color:'#7B4500'},
+  'Activation': {bg:'#F5D0D0',color:'#7A1818'},
+  'Sales': {bg:'#EEEBE4',color:'#524E43'}
+};
+
+let planningWeek = Object.keys(PLANNING_DATA).sort().reverse()[0];
+let planningFilter = 'all';
+
+function renderPlanning(){
+  if(!Object.keys(PLANNING_DATA).length){
+    document.getElementById('main').innerHTML=`<div class="fade noag">
+      <div style="font-size:40px;opacity:.13">📅</div>
+      <div style="font-size:14px;font-weight:600;color:var(--ink2)">Planning non chargé</div>
+      <div style="font-size:11.5px;color:var(--ink3);margin-top:4px;max-width:300px;text-align:center">Connecte Google Sheets pour afficher les plannings automatiquement depuis l'onglet <strong>Raw Data</strong></div>
+      <button class="btn pr" style="margin-top:12px" onclick="openModal()">📊 Connecter Google Sheets</button>
+    </div>`;
+    return;
+  }
+  const weeks = Object.keys(PLANNING_DATA).sort((a,b)=>{
+    const da=new Date(a.replace('Semaine du ',''));
+    const db=new Date(b.replace('Semaine du ',''));
+    return db-da;
+  });
+  if(!planningWeek||!PLANNING_DATA[planningWeek]) planningWeek=weeks[0];
+  let wData=PLANNING_DATA[planningWeek]||{};
+  if(currentUser){
+    const allowed=CONFIG.agents[authAllowedAgentIndex()]?.name||currentUser.agent;
+    const matched=Object.entries(wData).filter(([n])=>normName(n)===normName(allowed));
+    wData=Object.fromEntries(matched);
+    planningFilter='all';
+  }
+  const days=['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+  const depts=['CS','Activation','Social','Tech','Sales'];
+  
+  // Group agents by dept
+  const byDept={};
+  Object.entries(wData).forEach(([agent,info])=>{
+    const d=info.dept;
+    if(!byDept[d])byDept[d]=[];
+    byDept[d].push({agent,info});
+  });
+  
+  // Staff count per day
+  const staffPerDay={};
+  days.forEach(d=>{
+    staffPerDay[d]=Object.values(wData).filter(a=>a.days[d]&&a.days[d]!=='OFF').length;
+  });
+  
+  const weekOptions=weeks.map(w=>`<option value="${w}"${w===planningWeek?' selected':''}>${w}</option>`).join('');
+  const deptTabs=(['all',...depts.filter(d=>byDept[d]&&byDept[d].length>0)]).map(d=>{
+    const lbl=d==='all'?'Tous les agents':d;
+    const cnt=d==='all'?Object.keys(wData).length:(byDept[d]?byDept[d].length:0);
+    const dc=d!=='all'?DEPT_COLORS[d]||{bg:'#eee',color:'#333'}:{bg:'var(--s3)',color:'var(--ink2)'};
+    return `<button onclick="planningFilter='${d}';renderPlanning()" style="display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;font-size:11px;font-weight:600;border:1.5px solid ${planningFilter===d?'var(--acc)':'var(--bd)'};background:${planningFilter===d?'var(--acc)':dc.bg};color:${planningFilter===d?'#fff':dc.color};cursor:pointer;font-family:'Sora',sans-serif;transition:all .14s">${lbl}<span style="background:${planningFilter===d?'rgba(255,255,255,.25)':'rgba(0,0,0,.12)'};border-radius:8px;padding:0 5px;font-size:9.5px">${cnt}</span></button>`;
+  }).join('');
+  
+  // Build table rows
+  let rows='';
+  const filteredDepts = planningFilter==='all'?depts.filter(d=>byDept[d]):([planningFilter].filter(d=>byDept[d]));
+  filteredDepts.forEach(dept=>{
+    if(!byDept[dept])return;
+    const dc=DEPT_COLORS[dept]||{bg:'#eee',color:'#333'};
+    rows+=`<tr><td colspan="8" style="padding:10px 12px 4px;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${dc.color};background:${dc.bg};border-top:1px solid var(--bd)">── ${dept} ──</td></tr>`;
+    byDept[dept].sort((a,b)=>a.agent.localeCompare(b.agent)).forEach(({agent,info})=>{
+      const initials=agent.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();
+      const agentCells=days.map(day=>{
+        const shift=info.days[day]||'—';
+        const isOff=shift==='OFF'||shift==='—';
+        if(isOff) return `<td style="text-align:center;padding:7px 4px;font-size:10px;color:var(--ink3);background:var(--s2);border:1px solid var(--bd)">OFF</td>`;
+        const start=parseInt(shift.split(':')[0]);
+        const isEarly=start<9;
+        const isLate=start>=10;
+        const cellBg=isEarly?'#e8f5e9':isLate?'#e8eaf6':'#fff8e1';
+        const cellColor=isEarly?'#2e7d32':isLate?'#3949ab':'#f57f17';
+        return `<td style="text-align:center;padding:7px 4px;border:1px solid var(--bd)"><span style="display:inline-block;background:${cellBg};color:${cellColor};border-radius:5px;padding:2px 6px;font-size:10px;font-weight:600;white-space:nowrap">${shift}</span></td>`;
+      }).join('');
+      rows+=`<tr style="transition:background .1s" onmouseover="this.style.background='var(--s2)'" onmouseout="this.style.background=''">
+        <td style="padding:7px 12px;border:1px solid var(--bd);white-space:nowrap">
+          <div style="display:flex;align-items:center;gap:7px">
+            <div style="width:26px;height:26px;border-radius:50%;background:${dc.bg};color:${dc.color};display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;flex-shrink:0">${initials}</div>
+            <div>
+              <div style="font-size:11.5px;font-weight:500;color:var(--ink)">${agent}</div>
+              <div style="font-size:9.5px;color:var(--ink3)">${dept}</div>
+            </div>
+          </div>
+        </td>
+        ${agentCells}
+      </tr>`;
+    });
+  });
+  
+  // Footer: staff count per day
+  const footRow=days.map(d=>`<td style="text-align:center;padding:6px 4px;font-size:11px;font-weight:700;color:var(--ink);background:var(--s3);border:1px solid var(--bd)"><div>${staffPerDay[d]}</div><div style="font-size:8.5px;color:var(--ink3);font-weight:400">en service</div></td>`).join('');
+  
+  document.getElementById('main').innerHTML=`<div class="fade">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div class="page-title">📅 Planning All Channels</div>
+        <div class="page-sub">Horaires hebdomadaires · ${Object.keys(wData).length} agents · ${planningWeek}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--bd);border-radius:7px;padding:4px 9px;font-size:11.5px">
+          <span style="font-size:13px">📆</span>
+          <select onchange="planningWeek=this.value;renderPlanning()" style="border:none;background:none;font-family:'Sora',sans-serif;font-size:11.5px;color:var(--ink);cursor:pointer;outline:none">${weekOptions}</select>
+        </div>
+      </div>
+    </div>
+    
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:13px">${deptTabs}</div>
+    
+    <div style="background:var(--surf);border:1px solid var(--bd);border-radius:8px;overflow:hidden;margin-bottom:14px">
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;min-width:700px">
+          <thead>
+            <tr style="background:var(--s3)">
+              <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);border:1px solid var(--bd);min-width:160px">Agent</th>
+              ${days.map(d=>`<th style="text-align:center;padding:8px 6px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);border:1px solid var(--bd);min-width:88px">${d}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+          <tfoot>
+            <tr>
+              <td style="padding:7px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);background:var(--s3);border:1px solid var(--bd)">Staff en service</td>
+              ${footRow}
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+    
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+      <div style="display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--ink3)"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#e8f5e9"></span>Early (08:00–09:00)</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--ink3)"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#fff8e1"></span>Mid (09:00–10:00)</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--ink3)"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#e8eaf6"></span>Late (10:00+)</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--ink3)"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--s2);border:1px solid var(--bd)"></span>OFF</div>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════
+// ── CREDIT+ AI ASSISTANT ─────────────────────────────────
+// ══════════════════════════════════════════════════════════
+function cpBotToggle(force){
+  const box=document.getElementById('cpbot'); if(!box)return;
+  const open=force!==undefined?force:!box.classList.contains('open');
+  box.classList.toggle('open',open);
+  if(open&&!(box.dataset.ready)){cpBotAdd('bot','Bonjour 👋 Je peux répondre sur les performances, heures travaillées, KPIs, coaching/PIP et planning à partir des données du dashboard.');box.dataset.ready='1';}
+  cpBotRefreshSub();
+}
+
+function cpBotRefreshSub(){
+  const s=document.getElementById('cpbot-sub'); if(!s)return;
+  let a=null;
+  const idx = cpBotAgentIndex('');
+  if(idx>=0 && CONFIG && CONFIG.agents && CONFIG.agents[idx]) a=CONFIG.agents[idx];
+  s.textContent=(a?a.name:'Aucun agent sélectionné')+' · S'+getWeek();
+}
+
+function cpBotAdd(role,text){
+  const b=document.getElementById('cpbot-body'); if(!b)return;
+  const m=document.createElement('div');m.className='cpmsg '+role;m.textContent=text;b.appendChild(m);b.scrollTop=b.scrollHeight;
+}
+function cpBotAsk(q){const i=document.getElementById('cpbot-input');if(i){i.value=q;cpBotSend();}}
+function cpBotSend(){
+  const i=document.getElementById('cpbot-input'); if(!i)return;
+  const q=i.value.trim(); if(!q)return;
+  i.value=''; cpBotAdd('user',q); cpBotAdd('bot',cpBotAnswer(q));
+}
+function cpBotVal(v,u=''){return(v!==undefined&&v!==null&&v!=='')?String(v)+u:'—';}
+
+function cpBotAgentIndex(q){
+  const query = normName(q || '');
+  const agents = (CONFIG && Array.isArray(CONFIG.agents)) ? CONFIG.agents : [];
+
+  // Agent account: always locked to their own profile
+  if(window.currentUser && window.currentUser.role !== 'manager'){
+    const idx = (typeof authAllowedAgentIndex === 'function') ? authAllowedAgentIndex() : -1;
+    if(idx >= 0) return idx;
+  }
+
+  // Manager: detect agent name in question
+  for(let i=0;i<agents.length;i++){
+    const full = normName(agents[i].name);
+    const parts = full.split(' ').filter(Boolean);
+
+    if(query && query.includes(full)) return i;
+
+    // Partial matching: first name / last name / common token
+    if(query){
+      const hit = parts.some(p => p.length >= 3 && query.includes(p));
+      if(hit) return i;
+    }
+  }
+
+  // Manager fallback: selected dashboard agent
+  if(typeof selA !== 'undefined' && selA !== null && selA !== '' && !isNaN(Number(selA))){
+    const idx = Number(selA);
+    if(idx >= 0 && idx < agents.length) return idx;
+  }
+
+  // Fallback: highlighted sidebar agent
+  const active = document.querySelector('.agt.on');
+  if(active){
+    const all = Array.from(document.querySelectorAll('.agt'));
+    const idx = all.indexOf(active);
+    if(idx >= 0 && idx < agents.length) return idx;
+  }
+
+  return -1;
+}
+
+function cpBotPlanningFor(agentName){
+  if(typeof PLANNING_DATA==='undefined'||!PLANNING_DATA||!Object.keys(PLANNING_DATA).length)return 'Planning non chargé.';
+  const weeks=Object.keys(PLANNING_DATA);
+  let wKey=(typeof planningWeek!=='undefined'&&planningWeek&&PLANNING_DATA[planningWeek])?planningWeek:weeks[0];
+  const wData=PLANNING_DATA[wKey]||{};
+  const entry=Object.entries(wData).find(([n])=>normName(n)===normName(agentName));
+  if(!entry)return 'Aucun planning trouvé pour '+agentName+' sur '+wKey+'.';
+  const days=entry[1].days||{};
+  return 'Planning '+agentName+' · '+wKey+'\n'+Object.keys(days).map(d=>'• '+d+' : '+days[d]).join('\n');
+}
+
+function cpBotTrend(ai){
+  const current = parseInt(getWeek(),10);
+  let nums = CONFIG.weeks
+    .map(w=>parseInt(w.num,10))
+    .filter(n=>!isNaN(n))
+    .sort((a,b)=>a-b);
+
+  // Use the 4 weeks ending with the selected week.
+  let before = nums.filter(n=>n<=current).slice(-4);
+
+  // If the selected week is not in CONFIG or no previous weeks exist, fallback around current.
+  if(!before.length && !isNaN(current)){
+    before = [current-3,current-2,current-1,current].filter(n=>n>0);
+  }
+
+  return before.map(w=>{
+    const d=getData(ai,w);
+    const q=d.qualGlobal || d.qualEmail || d.qualPhone || '';
+    const hrs=d.totalHrs || '';
+    const contacts=(parseFloat(d.emailsHandled)||0)+(parseFloat(d.calls)||0)+(parseFloat(d.chats)||0);
+    const contactTxt=contacts?`, Contacts ${contacts}`:'';
+    return 'S'+w+': Qualité '+cpBotVal(q,'%')+', Hrs '+cpBotVal(hrs,'h')+contactTxt;
+  }).join('\n');
+}
+
+function cpBotWeakKPIs(d){
+  const weak=[];
+  CONFIG.kpis.forEach(kp=>{
+    if(kp.target===null||kp.id==='totalHrs')return;
+    const v=parseFloat(d[kp.id]); if(isNaN(v))return;
+    if((kp.dir==='gte'&&v<kp.target)||(kp.dir==='lte'&&v>kp.target))weak.push('• '+kp.label+': '+v+kp.unit+' / cible '+(kp.dir==='gte'?'≥ ':'≤ ')+kp.target+kp.unit);
+  });
+  return weak.length?weak.join('\n'):'Aucun KPI sous cible détecté avec les données chargées.';
+}
+
+function cpBotFindAgent(query){
+  query = normName(query || '');
+  const agents = (CONFIG && Array.isArray(CONFIG.agents)) ? CONFIG.agents : [];
+
+  // 1) If agent is logged in, force their own agent context.
+  if(window.currentUser && window.currentUser.role !== 'manager'){
+    const ownIdx = agents.findIndex(a => normName(a.name) === normName(window.currentUser.agent));
+    if(ownIdx >= 0) return ownIdx;
+  }
+
+  // 2) Exact / partial name matching from the written question.
+  for(let i=0;i<agents.length;i++){
+    const full = normName(agents[i].name);
+    const parts = full.split(' ').filter(Boolean);
+
+    if(query.includes(full)) return i;
+
+    // Match first name, last name, or initials when they are reasonably unique.
+    const uniquePartHit = parts.some(p => p.length >= 3 && query.includes(p));
+    if(uniquePartHit) return i;
+
+    const initials = parts.map(p => p[0]).join('');
+    if(initials && initials.length >= 2 && query.includes(initials)) return i;
+  }
+
+  // 3) Fallback to the selected dashboard agent.
+  if(typeof selA !== 'undefined' && selA !== null && selA !== '' && !isNaN(Number(selA))){
+    const idx = Number(selA);
+    if(idx >= 0 && idx < agents.length) return idx;
+  }
+
+  // 4) Fallback to currently highlighted sidebar agent.
+  const active = document.querySelector('.agt.on');
+  if(active){
+    const all = Array.from(document.querySelectorAll('.agt'));
+    const idx = all.indexOf(active);
+    if(idx >= 0 && idx < agents.length) return idx;
+  }
+
+  return -1;
+}
+
+function cpBotAnswer(q){
+  const query=(q||'').toLowerCase();
+  const ai=cpBotAgentIndex(q);
+  if(ai===null||ai===undefined||ai<0)return 'Je n’ai pas trouvé l’agent. Sélectionne un agent dans le dashboard ou écris son prénom/nom dans ta question.';
+  const a=CONFIG.agents[ai],w=getWeek(),d=getData(ai,w),c=getCoach(ai,w);
+  const apAgent=Object.values(apStore||{}).filter(p=>p.ai===ai);
+  const pips=Object.values(pipStore||{}).filter(p=>p.ai===ai);
+  if(query.includes('planning')||query.includes('shift')||query.includes('horaire'))return cpBotPlanningFor(a.name);
+  if(query.includes('heure')||query.includes('hours')||query.includes('worked')||query.includes('hrs'))return a.name+' · S'+w+'\nHeures travaillées: '+cpBotVal(d.totalHrs,' h')+'\nProductivity: '+cpBotVal(d.productivity)+'\nAHT: '+cpBotVal(d.aht,' min')+'\n\nTendance 4 dernières semaines:\n'+cpBotTrend(ai);
+  if(query.includes('faible')||query.includes('improve')||query.includes('améliorer')||query.includes('weak')||query.includes('kpi'))return a.name+' · KPIs à surveiller S'+w+'\n'+cpBotWeakKPIs(d);
+  if(query.includes('coach')||query.includes('brief')||query.includes('pip'))return a.name+' · Suivi\nCoaching 1:1: '+(c.checked?'Oui':'Non')+(c.date?' · '+c.date:'')+'\nPlans d’action: '+apAgent.length+'\nPIPs: '+pips.length+(pips.length?'\nDernier PIP: '+(pips[pips.length-1].objective||'—')+' · '+(pips[pips.length-1].status||'—'):'');
+  if(query.includes('mois')||query.includes('mensuel')||query.includes('monthly')){
+    const month=monthOf(w); const weeks=CONFIG.weeks.filter(x=>x.month===month).map(x=>x.num);
+    let hrs=0,contacts=0,qs=[];weeks.forEach(ww=>{const x=getData(ai,ww);hrs+=parseFloat(x.totalHrs)||0;contacts+=(parseFloat(x.emailsHandled)||0)+(parseFloat(x.calls)||0)+(parseFloat(x.chats)||0);['qualGlobal','qualEmail','qualPhone'].forEach(k=>{const v=parseFloat(x[k]);if(!isNaN(v))qs.push(v);});});
+    const avgQ=qs.length?(qs.reduce((s,v)=>s+v,0)/qs.length).toFixed(1)+'%':'—';
+    return a.name+' · Vue mensuelle '+month+'\nHeures cumulées: '+(hrs?hrs.toFixed(1)+' h':'—')+'\nContacts traités: '+(contacts||'—')+'\nQualité moyenne: '+avgQ+'\nSemaines incluses: '+weeks.map(x=>'S'+x).join(', ');
+  }
+  return a.name+' · Résumé S'+w+'\nPerformance: '+perf(d).toUpperCase()+'\nHeures: '+cpBotVal(d.totalHrs,' h')+'\nEmails: '+cpBotVal(d.emailsHandled)+' · Calls: '+cpBotVal(d.calls)+' · Chats: '+cpBotVal(d.chats)+'\nProductivity: '+cpBotVal(d.productivity)+' · AHT: '+cpBotVal(d.aht,' min')+'\nQualité globale: '+cpBotVal(d.qualGlobal,'%')+' · Email: '+cpBotVal(d.qualEmail,'%')+' · Phone: '+cpBotVal(d.qualPhone,'%')+'\n\nKPIs à surveiller:\n'+cpBotWeakKPIs(d);
+}
+
+// ══════════════════════════════════════════════════════════
+// ── INIT ──────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+buildWeekSelect(currentWeek);
+/* auth handled by verified login */
+/* auth handled by verified login */
+/* auth handled by verified login */
+if(scriptUrl){document.getElementById('sc-url').value=scriptUrl;document.getElementById('disp-url').value=scriptUrl.length>50?scriptUrl.slice(0,50)+'…':scriptUrl;setSS('ok','✓ Cache chargé');}
+renderSidebar();
+if(currentUser){renderContent();}
+else if(selA!==null&&curPage==='agent')renderContent();else if(curPage==='team')renderTeam();else if(curPage==='pip')renderPIPs();
+try{const saved=localStorage.getItem('cp_script_url');if(saved&&!scriptUrl){document.getElementById('sc-url').value=saved;}}catch(e){}
+</script>
+
+
+
+
+
+
+
+<script>
+(function(){
+  'use strict';
+  window.currentUser = window.currentUser || null;
+  const CP_USERS = [
+    {email:'oussama.fadmi@creditplus.ma', password:'123456789', role:'agent', agent:'Oussama Fadmi'},
+    {email:'mouad.elouazna@creditplus.ma', password:'123456789', role:'agent', agent:'Mouad Ouazna'},
+    {email:'younes.metgoul@creditplus.ma', password:'123456789', role:'agent', agent:'Younes Metgoul'},
+    {email:'asmaa.rhounaim@creditplus.ma', password:'123456789', role:'agent', agent:'Rhounaim Asmaa'},
+    {email:'ikram.oukrim@creditplus.ma', password:'123456789', role:'agent', agent:'Ikram Oukrim'},
+    {email:'malak.dehbi@creditplus.ma', password:'123456789', role:'agent', agent:'Malak Dehbi'},
+    {email:'aicha.moustaoui@creditplus.ma', password:'123456789', role:'agent', agent:'Aicha Moustaoui'},
+    {email:'badr.moutaaziz@creditplus.ma', password:'Badr@2000', role:'manager', agent:'Badr Moutaaziz'}
+  ];
+  const CP_SESSION = 'creditplus_login_session_final_v2';
+  function norm(v){ return String(v || '').trim().toLowerCase(); }
+  function getUser(){ return window.currentUser || null; }
+  function isManager(){ return !!(getUser() && getUser().role === 'manager'); }
+  function findAgentIndexByName(name){
+    if(!window.CONFIG || !Array.isArray(window.CONFIG.agents)) return -1;
+    const target = norm(name);
+    // Exact normalized name first
+    let idx = window.CONFIG.agents.findIndex(a => norm(a.name) === target);
+    if(idx >= 0) return idx;
+    // Fallback by all words, but avoid wrong Asmaa duplicate by requiring all meaningful tokens
+    const tokens = target.split(' ').filter(t => t.length >= 3);
+    if(tokens.length){
+      idx = window.CONFIG.agents.findIndex(a => {
+        const full = norm(a.name);
+        return tokens.every(t => full.includes(t));
+      });
+      if(idx >= 0) return idx;
+    }
+    return -1;
+  }
+  window.authIsManager = isManager;
+  window.authAllowedAgentIndex = function(){
+    const u = getUser(); if(!u || isManager()) return -1; return findAgentIndexByName(u.agent);
+  };
+  window.authIsAllowedAgent = function(i){
+    if(isManager()) return true; const allowed = window.authAllowedAgentIndex(); return allowed >= 0 && Number(i) === allowed;
+  };
+  function restrictAgentButtons(){
+    const u = getUser(); if(!u) return;
+    const buttons = Array.from(document.querySelectorAll('.agt'));
+    if(u.role === 'manager'){ buttons.forEach(b => b.style.display = ''); return; }
+    const allowed = window.authAllowedAgentIndex();
+    buttons.forEach((b, idx) => { b.style.display = (idx === allowed) ? '' : 'none'; });
+  }
+  function safeRender(){
+    try{ if(typeof window.renderSidebar === 'function') window.renderSidebar(); }catch(e){ console.warn('renderSidebar', e); }
+    try{ if(typeof window.renderContent === 'function') window.renderContent(); }catch(e){ console.warn('renderContent', e); }
+    setTimeout(restrictAgentButtons, 0);
+  }
+  function setLoggedIn(user){
+    window.currentUser = user;
+    try{ localStorage.setItem(CP_SESSION, JSON.stringify(user)); }catch(e){}
+    const overlay = document.getElementById('cp-login-screen'); if(overlay) overlay.style.display = 'none';
+    document.body.classList.toggle('cp-agent-readonly', user.role !== 'manager');
+    const pill = document.getElementById('cp-user-pill');
+    if(pill){ pill.style.display = 'flex'; pill.textContent = user.role === 'manager' ? 'Manager · ' + user.agent : user.agent; }
+    const signoutBtn=document.getElementById('cp-signout-btn'); if(signoutBtn) signoutBtn.style.display='inline-flex';
+    ['btn-team','btn-admin','btn-guide','btn-pip'].forEach(id => {
+      const el = document.getElementById(id); if(el) el.style.display = user.role === 'manager' ? '' : 'none';
+    });
+    if(user.role !== 'manager'){
+      const idx = findAgentIndexByName(user.agent);
+      if(idx >= 0){ selA = idx; curPage = 'agent'; activeTab='kpis'; }
+    }
+    safeRender();
+  }
+  function loginNow(){
+    const email = norm(document.getElementById('cp-login-email')?.value);
+    const password = String(document.getElementById('cp-login-password')?.value || '');
+    const error = document.getElementById('cp-login-error');
+    const found = CP_USERS.find(u => norm(u.email) === email && u.password === password);
+    if(!found){ if(error) error.textContent = 'Email ou mot de passe incorrect.'; return false; }
+    if(error) error.textContent = '';
+    setLoggedIn({email:found.email, agent:found.agent, role:found.role, loginAt:new Date().toISOString()}); setTimeout(function(){ if(window.cpForceLoggedAgent){window.cpForceLoggedAgent(); if(typeof renderSidebar==='function')renderSidebar(); if(typeof renderContent==='function')renderContent();} },0);
+    return false;
+  }
+  window.cpLoginTest = loginNow;
+  window.authLogout = function(){ try{ localStorage.removeItem(CP_SESSION); }catch(e){} window.currentUser=null; document.body.classList.remove('cp-agent-readonly'); const b=document.getElementById('cp-signout-btn'); if(b)b.style.display='none'; location.reload(); };
+  window.goTeam = function(){ if(getUser() && !isManager()) return; curPage='team'; selA=null; if(typeof renderSidebar==='function')renderSidebar(); if(typeof renderTeam==='function')renderTeam(); };
+  window.goPip = function(){ if(getUser() && !isManager()) return; curPage='pip'; selA=null; if(typeof renderSidebar==='function')renderSidebar(); if(typeof renderPIPs==='function')renderPIPs(); };
+  window.goAdmin = function(){ if(getUser() && !isManager()) return; curPage='admin'; selA=null; if(typeof renderSidebar==='function')renderSidebar(); if(typeof renderAdmin==='function')renderAdmin(); };
+  window.goGuide = function(){ if(getUser() && !isManager()) return; curPage='guide'; selA=null; if(typeof renderSidebar==='function')renderSidebar(); if(typeof renderGuide==='function')renderGuide(); };
+  window.goPlanning = function(){ curPage='planning'; selA=(getUser()&&!isManager())?window.authAllowedAgentIndex():null; if(typeof renderSidebar==='function')renderSidebar(); if(typeof renderPlanning==='function')renderPlanning(); };
+  document.addEventListener('DOMContentLoaded', function(){
+    const signoutBtn=document.getElementById('cp-signout-btn'); if(signoutBtn) signoutBtn.addEventListener('click', function(e){e.preventDefault(); window.authLogout();});
+    const btn = document.getElementById('cp-login-button');
+    if(btn) btn.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); loginNow(); });
+    ['cp-login-email','cp-login-password'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); e.stopPropagation(); loginNow(); } });
+    });
+    try{
+      const saved = JSON.parse(localStorage.getItem(CP_SESSION) || 'null');
+      const found = saved && CP_USERS.find(u => norm(u.email) === norm(saved.email));
+      if(found) setLoggedIn({email:found.email, agent:found.agent, role:found.role, loginAt:saved.loginAt || new Date().toISOString()});
+    }catch(e){}
+  });
+})();
+</script>
+
+
+<script>
+(function(){
+  function cpApplyReadOnlyMode(){
+    const u = window.currentUser;
+    const isAgent = !!(u && u.role !== 'manager');
+    document.body.classList.toggle('cp-agent-readonly', isAgent);
+    if(!isAgent) return;
+
+    // Hide editing tabs/cards by visible text.
+    const blockedText = ['Saisie & Graphiques','Saisie KPIs','Email 1:1','Plans d\'Action','Save Data','Générer','Modifier','Supprimer'];
+    document.querySelectorAll('button,.tab,.card,.ec,.coach-box').forEach(el=>{
+      const txt=(el.textContent||'').trim();
+      if(blockedText.some(b=>txt.includes(b))){
+        // Keep read-only chart cards when possible, but remove manual KPI input card/tabs/buttons.
+        if(txt.includes('Saisie KPIs') || txt.includes('Saisie & Graphiques') || txt.includes('Save Data') || txt.includes('Email 1:1') || txt.includes('Plans d\'Action')){
+          el.style.display='none';
+        }
+      }
+    });
+
+    // Disable direct editing controls except chatbot/login/signout controls.
+    document.querySelectorAll('input,textarea,select,button').forEach(el=>{
+      const id=el.id||'';
+      const keep = ['cp-login-email','cp-login-password','cp-login-button','cp-signout-btn','cpbot-input','wsel','bw','bm'].includes(id) || el.closest('#cpbot') || el.closest('.vtog') || el.closest('.wpill');
+      if(!keep){
+        if(['INPUT','TEXTAREA','SELECT'].includes(el.tagName)) el.setAttribute('readonly','readonly');
+      }
+    });
+  }
+  window.cpApplyReadOnlyMode = cpApplyReadOnlyMode;
+
+  const oldRenderContent = window.renderContent;
+  if(typeof oldRenderContent === 'function'){
+    window.renderContent = function(){
+      const r = oldRenderContent.apply(this, arguments);
+      setTimeout(cpApplyReadOnlyMode, 0);
+      return r;
+    };
+  }
+  const oldRenderSidebar = window.renderSidebar;
+  if(typeof oldRenderSidebar === 'function'){
+    window.renderSidebar = function(){
+      const r = oldRenderSidebar.apply(this, arguments);
+      setTimeout(cpApplyReadOnlyMode, 0);
+      return r;
+    };
+  }
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(cpApplyReadOnlyMode, 300); });
+})();
+</script>
+
+
+<script>
+(function(){
+  function cpNorm(v){ return String(v || '').trim().toLowerCase().replace(/\s+/g,' '); }
+
+  function cpCurrentAgentIndex(){
+    const u = window.currentUser;
+    if(!u || u.role === 'manager') return (typeof selA !== 'undefined' ? selA : null);
+    if(!window.CONFIG || !Array.isArray(window.CONFIG.agents)) return null;
+
+    const wanted = cpNorm(u.agent);
+    let idx = window.CONFIG.agents.findIndex(a => cpNorm(a.name) === wanted);
+    if(idx >= 0) return idx;
+
+    // Fallback: match every meaningful token, but avoid wrong duplicate first names.
+    const tokens = wanted.split(' ').filter(t => t.length >= 3);
+    idx = window.CONFIG.agents.findIndex(a => {
+      const full = cpNorm(a.name);
+      return tokens.length && tokens.every(t => full.includes(t));
+    });
+    return idx >= 0 ? idx : null;
+  }
+
+  function cpForceLoggedAgent(){
+    const u = window.currentUser;
+    if(!u || u.role === 'manager') return;
+    const idx = cpCurrentAgentIndex();
+    if(idx !== null && idx !== undefined && idx >= 0){
+      selA = idx;
+      curPage = 'agent';
+    }
+  }
+
+  window.cpCurrentAgentIndex = cpCurrentAgentIndex;
+  window.cpForceLoggedAgent = cpForceLoggedAgent;
+
+  // Override auth helpers to use exact CONFIG index after Sheets reload.
+  window.authAllowedAgentIndex = function(){
+    const u = window.currentUser;
+    if(!u || u.role === 'manager') return -1;
+    const idx = cpCurrentAgentIndex();
+    return (idx !== null && idx !== undefined) ? idx : -1;
+  };
+  window.authIsAllowedAgent = function(i){
+    const u = window.currentUser;
+    if(!u || u.role === 'manager') return true;
+    return Number(i) === window.authAllowedAgentIndex();
+  };
+
+  // Wrap renderers so agent accounts can never render another agent's data.
+  const oldRenderContent = window.renderContent;
+  if(typeof oldRenderContent === 'function'){
+    window.renderContent = function(){
+      cpForceLoggedAgent();
+      const result = oldRenderContent.apply(this, arguments);
+      setTimeout(function(){
+        cpForceLoggedAgent();
+        if(typeof window.cpApplyReadOnlyMode === 'function') window.cpApplyReadOnlyMode();
+        cpFixAgentSidebarVisual();
+      }, 0);
+      return result;
+    };
+  }
+
+  const oldRenderSidebar = window.renderSidebar;
+  if(typeof oldRenderSidebar === 'function'){
+    window.renderSidebar = function(){
+      cpForceLoggedAgent();
+      const result = oldRenderSidebar.apply(this, arguments);
+      setTimeout(function(){
+        cpFixAgentSidebarVisual();
+        if(typeof window.cpApplyReadOnlyMode === 'function') window.cpApplyReadOnlyMode();
+      }, 0);
+      return result;
+    };
+  }
+
+  // Block manual selection for agents and keep selected sidebar consistent.
+  const oldSelectAgent = window.selectAgent;
+  if(typeof oldSelectAgent === 'function'){
+    window.selectAgent = function(i){
+      const u = window.currentUser;
+      if(u && u.role !== 'manager'){
+        cpForceLoggedAgent();
+        i = selA;
+      }
+      return oldSelectAgent.call(this, i);
+    };
+  }
+
+  function cpFixAgentSidebarVisual(){
+    const u = window.currentUser;
+    if(!u || u.role === 'manager') return;
+    const idx = window.authAllowedAgentIndex();
+    document.querySelectorAll('.agt').forEach(function(btn, i){
+      btn.style.display = i === idx ? '' : 'none';
+      btn.classList.toggle('on', i === idx);
+    });
+  }
+  window.cpFixAgentSidebarVisual = cpFixAgentSidebarVisual;
+
+  // Patch getData: if agent account calls getData for wrong index, use logged-in index.
+  const oldGetData = window.getData;
+  if(typeof oldGetData === 'function'){
+    window.getData = function(ai, w){
+      const u = window.currentUser;
+      if(u && u.role !== 'manager'){
+        const idx = window.authAllowedAgentIndex();
+        if(idx >= 0) ai = idx;
+      }
+      return oldGetData.call(this, ai, w);
+    };
+  }
+
+  // Patch getCoach similarly.
+  const oldGetCoach = window.getCoach;
+  if(typeof oldGetCoach === 'function'){
+    window.getCoach = function(ai, w){
+      const u = window.currentUser;
+      if(u && u.role !== 'manager'){
+        const idx = window.authAllowedAgentIndex();
+        if(idx >= 0) ai = idx;
+      }
+      return oldGetCoach.call(this, ai, w);
+    };
+  }
+
+  // Re-sync after data/config loads.
+  const oldLoadScript = window.loadScript;
+  if(typeof oldLoadScript === 'function'){
+    window.loadScript = function(){
+      const r = oldLoadScript.apply(this, arguments);
+      setTimeout(function(){ cpForceLoggedAgent(); if(typeof renderSidebar==='function')renderSidebar(); if(typeof renderContent==='function')renderContent(); }, 1200);
+      setTimeout(function(){ cpForceLoggedAgent(); if(typeof renderSidebar==='function')renderSidebar(); if(typeof renderContent==='function')renderContent(); }, 3000);
+      return r;
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    setTimeout(function(){ cpForceLoggedAgent(); if(typeof renderSidebar==='function')renderSidebar(); if(typeof renderContent==='function')renderContent(); }, 600);
+    setTimeout(function(){ cpForceLoggedAgent(); cpFixAgentSidebarVisual(); }, 1500);
+  });
+})();
+</script>
+
+
+<script>
+(function(){
+  function nrm(v){return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();}
+  const EMAIL_AGENT_MAP={
+    'oussama.fadmi@creditplus.ma':'Oussama Fadmi',
+    'mouad.elouazna@creditplus.ma':'Mouad Ouazna',
+    'younes.metgoul@creditplus.ma':'Younes Metgoul',
+    'asmaa.rhounaim@creditplus.ma':'Rhounaim Asmaa',
+    'ikram.oukrim@creditplus.ma':'Ikram Oukrim',
+    'malak.dehbi@creditplus.ma':'Malak Dehbi',
+    'aicha.moustaoui@creditplus.ma':'Aicha Moustaoui'
+  };
+
+  function loggedAgentName(){
+    const u=window.currentUser;
+    if(!u || u.role==='manager') return null;
+    return EMAIL_AGENT_MAP[nrm(u.email)] || u.agent || null;
+  }
+
+  function loggedAgentIndex(){
+    const name=loggedAgentName();
+    if(!name || !CONFIG || !Array.isArray(CONFIG.agents)) return -1;
+    let idx=CONFIG.agents.findIndex(a=>nrm(a.name)===nrm(name));
+    if(idx>=0) return idx;
+    const parts=nrm(name).split(' ').filter(x=>x.length>=3);
+    idx=CONFIG.agents.findIndex(a=>{
+      const full=nrm(a.name);
+      return parts.length && parts.every(p=>full.includes(p));
+    });
+    return idx;
+  }
+
+  function forceAgent(){
+    const u=window.currentUser;
+    if(!u || u.role==='manager') return;
+    const idx=loggedAgentIndex();
+    if(idx>=0){
+      selA=idx;
+      curPage='agent';
+    }
+  }
+
+  window.cpLoggedAgentIndex=loggedAgentIndex;
+  window.cpForceAgent=forceAgent;
+  window.authAllowedAgentIndex=function(){
+    const u=window.currentUser;
+    if(!u || u.role==='manager') return -1;
+    return loggedAgentIndex();
+  };
+  window.authIsAllowedAgent=function(i){
+    const u=window.currentUser;
+    if(!u || u.role==='manager') return true;
+    return Number(i)===loggedAgentIndex();
+  };
+
+  const oldRenderWeekly=window.renderWeekly;
+  if(typeof oldRenderWeekly==='function'){
+    window.renderWeekly=function(){forceAgent();return oldRenderWeekly.apply(this,arguments);};
+  }
+  const oldRenderMonthly=window.renderMonthly;
+  if(typeof oldRenderMonthly==='function'){
+    window.renderMonthly=function(){forceAgent();return oldRenderMonthly.apply(this,arguments);};
+  }
+  const oldRenderContent=window.renderContent;
+  if(typeof oldRenderContent==='function'){
+    window.renderContent=function(){forceAgent();const r=oldRenderContent.apply(this,arguments);setTimeout(cleanAgentUI,0);return r;};
+  }
+  const oldRenderSidebar=window.renderSidebar;
+  if(typeof oldRenderSidebar==='function'){
+    window.renderSidebar=function(){forceAgent();const r=oldRenderSidebar.apply(this,arguments);setTimeout(cleanAgentUI,0);return r;};
+  }
+
+  const oldGetData=window.getData;
+  if(typeof oldGetData==='function'){
+    window.getData=function(ai,w){
+      const u=window.currentUser;
+      if(u && u.role!=='manager'){
+        const idx=loggedAgentIndex();
+        if(idx>=0) ai=idx;
+      }
+      return oldGetData.call(this,ai,w);
+    };
+  }
+
+  const oldGetCoach=window.getCoach;
+  if(typeof oldGetCoach==='function'){
+    window.getCoach=function(ai,w){
+      const u=window.currentUser;
+      if(u && u.role!=='manager'){
+        const idx=loggedAgentIndex();
+        if(idx>=0) ai=idx;
+      }
+      return oldGetCoach.call(this,ai,w);
+    };
+  }
+
+  // Prevent agent from opening another profile through old onclicks.
+  const oldSelectAgent=window.selectAgent;
+  if(typeof oldSelectAgent==='function'){
+    window.selectAgent=function(i){
+      const u=window.currentUser;
+      if(u && u.role!=='manager'){
+        forceAgent();
+        i=selA;
+      }
+      return oldSelectAgent.call(this,i);
+    };
+  }
+
+  function cleanAgentUI(){
+    const u=window.currentUser;
+    if(!u || u.role==='manager') return;
+    forceAgent();
+    document.body.classList.add('cp-agent-readonly');
+
+    // Sidebar: only logged agent visible and selected.
+    const idx=loggedAgentIndex();
+    document.querySelectorAll('.agt').forEach((b,i)=>{
+      b.style.display=(i===idx)?'':'none';
+      b.classList.toggle('on',i===idx);
+    });
+
+    // Hide manual edit tabs/cards/buttons including 1:1 delete controls.
+    const blocked=["Saisie & Graphiques","Saisie KPIs","Email 1:1","Plans d\'Action","Save Data","Tout supprimer","✕ 1:1","Modifier","Supprimer","Générer"];
+    document.querySelectorAll('button,.tab,.card,.ec,.coach-box,.ap-new').forEach(el=>{
+      if(el.id==='bw'||el.id==='bm'||el.id==='cp-signout-btn'||el.closest('.vtog')||el.closest('.wpill')) return;
+      const txt=(el.textContent||'').trim();
+      if(blocked.some(b=>txt.includes(b))){
+        if(!el.closest('#cpbot') && el.id!=='cp-signout-btn') el.style.display='none';
+      }
+    });
+
+    // Specifically remove delete 1:1 buttons in monthly detail.
+    document.querySelectorAll('button').forEach(btn=>{
+      const t=(btn.textContent||'').trim();
+      if(t==='Tout supprimer' || t.includes('✕ 1:1') || t.includes('X 1:1')) btn.style.display='none';
+    });
+  }
+  window.cpCleanAgentUI=cleanAgentUI;
+
+  // Re-force after login, sheet sync, week/month switches.
+  document.addEventListener('DOMContentLoaded',function(){
+    setTimeout(()=>{forceAgent(); if(typeof renderSidebar==='function')renderSidebar(); if(typeof renderContent==='function')renderContent(); cleanAgentUI();},300);
+    setTimeout(()=>{forceAgent(); if(typeof renderSidebar==='function')renderSidebar(); if(typeof renderContent==='function')renderContent(); cleanAgentUI();},1200);
+    setInterval(()=>{if(window.currentUser && window.currentUser.role!=='manager') cleanAgentUI();},1500);
+  });
+})();
+</script>
+
+
+<script>
+(function(){
+  function forceOwnAndRender(){
+    if(window.currentUser && window.currentUser.role !== 'manager' && typeof window.cpForceAgent === 'function'){
+      window.cpForceAgent();
+    }
+    if(typeof renderSidebar === 'function') renderSidebar();
+    if(typeof renderContent === 'function') renderContent();
+    if(typeof cpCleanAgentUI === 'function') setTimeout(cpCleanAgentUI,0);
+  }
+
+  const oldOnWkChange = window.onWkChange;
+  if(typeof oldOnWkChange === 'function'){
+    window.onWkChange = function(){
+      const r = oldOnWkChange.apply(this, arguments);
+      setTimeout(forceOwnAndRender, 0);
+      return r;
+    };
+  }
+
+  const oldSetView = window.setView;
+  if(typeof oldSetView === 'function'){
+    window.setView = function(v){
+      const r = oldSetView.apply(this, arguments);
+      setTimeout(forceOwnAndRender, 0);
+      return r;
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    const wsel=document.getElementById('wsel');
+    if(wsel){
+      wsel.disabled=false;
+      wsel.style.pointerEvents='auto';
+    }
+    ['bw','bm'].forEach(id=>{
+      const b=document.getElementById(id);
+      if(b){
+        b.disabled=false;
+        b.style.pointerEvents='auto';
+      }
+    });
+  });
+})();
+</script>
+
+
+<script>
+(function(){
+  function refreshBotContext(){
+    if(typeof cpBotRefreshSub === 'function') cpBotRefreshSub();
+  }
+  const oldRenderContent = window.renderContent;
+  if(typeof oldRenderContent === 'function'){
+    window.renderContent = function(){
+      const r = oldRenderContent.apply(this, arguments);
+      setTimeout(refreshBotContext, 0);
+      return r;
+    };
+  }
+  const oldRenderSidebar = window.renderSidebar;
+  if(typeof oldRenderSidebar === 'function'){
+    window.renderSidebar = function(){
+      const r = oldRenderSidebar.apply(this, arguments);
+      setTimeout(refreshBotContext, 0);
+      return r;
+    };
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    setTimeout(refreshBotContext, 300);
+    setTimeout(refreshBotContext, 1200);
+  });
+})();
+</script>
+
+</body>
+</html>
